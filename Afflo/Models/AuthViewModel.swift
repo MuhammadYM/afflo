@@ -16,10 +16,13 @@ class AuthViewModel: ObservableObject {
         // Listen for auth state changes
         Task {
             for await state in supabase.auth.authStateChanges {
-                if case .signedIn(let session) = state.event {
-                    self.session = session
-                } else if case .signedOut = state.event {
+                switch state.event {
+                case .signedIn:
+                    self.session = state.session
+                case .signedOut:
                     self.session = nil
+                default:
+                    break
                 }
             }
         }
