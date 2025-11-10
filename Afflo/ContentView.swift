@@ -1,86 +1,47 @@
-//
-//  ContentView.swift
-//  Afflo
-//
-//  Created by Muhammad M on 11/9/25.
-//
-
 import SwiftUI
-import CoreData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
+    @StateObject private var authViewModel = AuthViewModel()
+    @State private var hasCompletedOnboarding = UserDefaultsManager.shared.hasCompletedOnboarding
 
     var body: some View {
-        NavigationStack {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
-                    }
-                }
-                .onDelete(perform: deleteItems)
+        Group {
+            if authViewModel.session == nil {
+                // No session -> show auth
+                AuthView()
+            } else if !hasCompletedOnboarding {
+                // Session exists but no onboarding -> show onboarding
+                OnboardingView(onComplete: {
+                    hasCompletedOnboarding = true
+                })
+            } else {
+                // Session exists and onboarding complete -> show main tabs
+                MainTabView()
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-            .navigationTitle("Items")
         }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        .onAppear {
+            // Refresh onboarding status on appear
+            hasCompletedOnboarding = UserDefaultsManager.shared.hasCompletedOnboarding
+        }
+        .onChange(of: authViewModel.session) { oldValue, newValue in
+            // Refresh onboarding status when session changes
+            hasCompletedOnboarding = UserDefaultsManager.shared.hasCompletedOnboarding
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            // Refresh session when app enters foreground
+            Task {
+                await refreshSession()
             }
         }
     }
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
+    private func refreshSession() async {
+        // Session is automatically refreshed by AuthViewModel's init listener
+        // Just refresh onboarding status
+        hasCompletedOnboarding = UserDefaultsManager.shared.hasCompletedOnboarding
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
 #Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    ContentView()
 }

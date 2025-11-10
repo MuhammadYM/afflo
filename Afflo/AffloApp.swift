@@ -14,7 +14,7 @@ struct AffloApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AuthView()
+            ContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
