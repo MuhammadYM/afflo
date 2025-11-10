@@ -15,7 +15,8 @@ extension Color {
 
     // MARK: - Custom Colors
     static let blob = Color(hex: "#F8D18A")
-    static let gridLine = Color(hex: "#E6E6E6")
+    static let lightGridLine = Color(hex: "#E6E6E6")
+    static let darkGridLine = Color(hex: "#2A2A2A")
     static let inputBackground = Color(hex: "#EFEFEF")
     static let buttonBlack = Color(hex: "#1C1C1C")
     static let buttonGray = Color(hex: "#D9D9D9")
@@ -35,6 +36,10 @@ extension Color {
 
     static func icon(for colorScheme: ColorScheme) -> Color {
         colorScheme == .dark ? darkIcon : lightIcon
+    }
+
+    static func gridLine(for colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark ? darkGridLine : lightGridLine
     }
 }
 
