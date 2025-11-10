@@ -17,7 +17,7 @@ struct ContentView: View {
     private var items: FetchedResults<Item>
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 ForEach(items) { item in
                     NavigationLink {
@@ -32,13 +32,13 @@ struct ContentView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
                 }
-                ToolbarItem {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: addItem) {
                         Label("Add Item", systemImage: "plus")
                     }
                 }
             }
-            Text("Select an item")
+            .navigationTitle("Items")
         }
     }
 
