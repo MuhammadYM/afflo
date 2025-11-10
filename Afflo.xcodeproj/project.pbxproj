@@ -6,6 +6,16 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		862B79FC2EC1CDD3003E0717 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 862B79FB2EC1CDD3003E0717 /* Auth */; };
+		862B79FE2EC1CDD3003E0717 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 862B79FD2EC1CDD3003E0717 /* PostgREST */; };
+		862B7A002EC1CDD3003E0717 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 862B79FF2EC1CDD3003E0717 /* Supabase */; };
+		862B7A102EC1CEDA003E0717 /* AnonymousPro-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 862B7A0E2EC1CEDA003E0717 /* AnonymousPro-Regular.ttf */; };
+		862B7A112EC1CEDA003E0717 /* AnonymousPro-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 862B7A0D2EC1CEDA003E0717 /* AnonymousPro-Italic.ttf */; };
+		862B7A122EC1CEDA003E0717 /* AnonymousPro-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 862B7A0B2EC1CEDA003E0717 /* AnonymousPro-Bold.ttf */; };
+		862B7A132EC1CEDA003E0717 /* AnonymousPro-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 862B7A0C2EC1CEDA003E0717 /* AnonymousPro-BoldItalic.ttf */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		862B79DE2EC1CB6E003E0717 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,11 +37,28 @@
 		862B79CB2EC1CB6C003E0717 /* Afflo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Afflo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		862B79DD2EC1CB6E003E0717 /* AffloTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AffloTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		862B79E72EC1CB6E003E0717 /* AffloUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AffloUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		862B7A0B2EC1CEDA003E0717 /* AnonymousPro-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "AnonymousPro-Bold.ttf"; sourceTree = "<group>"; };
+		862B7A0C2EC1CEDA003E0717 /* AnonymousPro-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "AnonymousPro-BoldItalic.ttf"; sourceTree = "<group>"; };
+		862B7A0D2EC1CEDA003E0717 /* AnonymousPro-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "AnonymousPro-Italic.ttf"; sourceTree = "<group>"; };
+		862B7A0E2EC1CEDA003E0717 /* AnonymousPro-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "AnonymousPro-Regular.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		862B7A152EC1D06D003E0717 /* Exceptions for "Afflo" folder in "Afflo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 862B79CA2EC1CB6C003E0717 /* Afflo */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		862B79CD2EC1CB6C003E0717 /* Afflo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				862B7A152EC1D06D003E0717 /* Exceptions for "Afflo" folder in "Afflo" target */,
+			);
 			path = Afflo;
 			sourceTree = "<group>";
 		};
@@ -52,6 +79,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				862B79FE2EC1CDD3003E0717 /* PostgREST in Frameworks */,
+				862B79FC2EC1CDD3003E0717 /* Auth in Frameworks */,
+				862B7A002EC1CDD3003E0717 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,6 +105,7 @@
 		862B79C22EC1CB6C003E0717 = {
 			isa = PBXGroup;
 			children = (
+				862B7A0F2EC1CEDA003E0717 /* Fonts */,
 				862B79CD2EC1CB6C003E0717 /* Afflo */,
 				862B79E02EC1CB6E003E0717 /* AffloTests */,
 				862B79EA2EC1CB6E003E0717 /* AffloUITests */,
@@ -90,6 +121,17 @@
 				862B79E72EC1CB6E003E0717 /* AffloUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		862B7A0F2EC1CEDA003E0717 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				862B7A0B2EC1CEDA003E0717 /* AnonymousPro-Bold.ttf */,
+				862B7A0C2EC1CEDA003E0717 /* AnonymousPro-BoldItalic.ttf */,
+				862B7A0D2EC1CEDA003E0717 /* AnonymousPro-Italic.ttf */,
+				862B7A0E2EC1CEDA003E0717 /* AnonymousPro-Regular.ttf */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +154,9 @@
 			);
 			name = Afflo;
 			packageProductDependencies = (
+				862B79FB2EC1CDD3003E0717 /* Auth */,
+				862B79FD2EC1CDD3003E0717 /* PostgREST */,
+				862B79FF2EC1CDD3003E0717 /* Supabase */,
 			);
 			productName = Afflo;
 			productReference = 862B79CB2EC1CB6C003E0717 /* Afflo.app */;
@@ -195,6 +240,9 @@
 			);
 			mainGroup = 862B79C22EC1CB6C003E0717;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				862B79FA2EC1CDD3003E0717 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 862B79CC2EC1CB6C003E0717 /* Products */;
 			projectDirPath = "";
@@ -212,6 +260,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				862B7A102EC1CEDA003E0717 /* AnonymousPro-Regular.ttf in Resources */,
+				862B7A112EC1CEDA003E0717 /* AnonymousPro-Italic.ttf in Resources */,
+				862B7A122EC1CEDA003E0717 /* AnonymousPro-Bold.ttf in Resources */,
+				862B7A132EC1CEDA003E0717 /* AnonymousPro-BoldItalic.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -400,6 +452,7 @@
 				DEVELOPMENT_TEAM = BRZM59634N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Afflo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -432,6 +485,7 @@
 				DEVELOPMENT_TEAM = BRZM59634N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Afflo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -578,6 +632,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		862B79FA2EC1CDD3003E0717 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		862B79FB2EC1CDD3003E0717 /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 862B79FA2EC1CDD3003E0717 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		862B79FD2EC1CDD3003E0717 /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 862B79FA2EC1CDD3003E0717 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		862B79FF2EC1CDD3003E0717 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 862B79FA2EC1CDD3003E0717 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 862B79C32EC1CB6C003E0717 /* Project object */;
 }
