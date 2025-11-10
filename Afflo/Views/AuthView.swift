@@ -15,14 +15,6 @@ struct AuthView: View {
             BackgroundGridOverlay()
 
             VStack(spacing: 0) {
-                // Header with logo
-                HStack {
-                    LogoBar()
-                    Spacer()
-                }
-                .padding(.top, 40)
-                .padding(.horizontal, 20)
-
                 Spacer()
 
                 // Middle content with tagline
@@ -142,15 +134,6 @@ struct AuthView: View {
         }.joined()
 
         return hashString
-    }
-}
-
-// Logo bar component (black horizontal line)
-struct LogoBar: View {
-    var body: some View {
-        Rectangle()
-            .fill(Color.black)
-            .frame(width: 80, height: 2)
     }
 }
 
