@@ -21,8 +21,14 @@ struct AuthView: View {
                 VStack {
                     Text("Its starts with the mind")
                         .font(.anonymousPro(size: 18))
-                        .foregroundColor(Color(hex: "#333333"))
+                        .foregroundColor(colorScheme == .dark ? Color.darkText : Color(hex: "#333333"))
                         .multilineTextAlignment(.center)
+                        .shadow(
+                            color: colorScheme == .dark ? Color.white.opacity(0.3) : Color.clear,
+                            radius: 20,
+                            x: 0,
+                            y: 0
+                        )
                 }
 
                 Spacer()

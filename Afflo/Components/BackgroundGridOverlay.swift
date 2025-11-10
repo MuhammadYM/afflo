@@ -1,13 +1,15 @@
 import SwiftUI
 
 struct BackgroundGridOverlay: View {
+    @Environment(\.colorScheme) var colorScheme
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 // Horizontal lines (3 lines)
                 ForEach(0..<3, id: \.self) { index in
                     Rectangle()
-                        .fill(Color.gridLine)
+                        .fill(Color.gridLine(for: colorScheme))
                         .frame(height: 1)
                         .offset(y: horizontalLineOffset(index: index, height: geometry.size.height))
                 }
@@ -15,7 +17,7 @@ struct BackgroundGridOverlay: View {
                 // Vertical lines (2 lines)
                 ForEach(0..<2, id: \.self) { index in
                     Rectangle()
-                        .fill(Color.gridLine)
+                        .fill(Color.gridLine(for: colorScheme))
                         .frame(width: 1)
                         .offset(x: verticalLineOffset(index: index, width: geometry.size.width))
                 }
