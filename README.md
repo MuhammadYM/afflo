@@ -25,14 +25,32 @@ Afflo/
 
 1. Clone the repo
 2. Open `Afflo.xcodeproj` in Xcode
-3. Update Supabase credentials in `Services/SupabaseClient.swift`
-4. Build and run
+3. **Configure Supabase credentials:**
+   ```bash
+   cp Afflo/Config.plist.example Afflo/Config.plist
+   ```
+   Then edit `Afflo/Config.plist` with your Supabase URL and anon key
+4. Add `Config.plist` to Xcode project (right-click Afflo folder → Add Files)
+5. Build and run
 
 ### Supabase Configuration
 
-Currently configured for local Supabase instance (`http://127.0.0.1:54321`).
+The app uses `Afflo/Config.plist` for environment configuration (gitignored).
 
-For production, update the URL and anon key in `SupabaseClient.swift`.
+**Config.plist structure:**
+```xml
+<dict>
+    <key>SUPABASE_URL</key>
+    <string>YOUR_SUPABASE_URL</string>
+    <key>SUPABASE_ANON_KEY</key>
+    <string>YOUR_ANON_KEY</string>
+    <key>USE_LOCAL</key>
+    <true/> <!-- or <false/> for production -->
+</dict>
+```
+
+- Set `USE_LOCAL` to `true` for local Supabase (`http://127.0.0.1:54321`)
+- Set `USE_LOCAL` to `false` to use production credentials from Config.plist
 
 ## Design System
 
