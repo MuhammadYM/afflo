@@ -94,3 +94,11 @@ iOSInjectionProject/
 
 ## Environment
 .env
+Afflo/Config.plist
+AuthKey_*.p8
+
+## Node.js (for JWT generation scripts - not committed)
+node_modules/
+package.json
+package-lock.json
+generate-apple-secret.js
