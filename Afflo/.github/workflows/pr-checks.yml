@@ -1,0 +1,67 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build iOS App
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_15.0.app/Contents/Developer
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project Afflo.xcodeproj \
+            -scheme Afflo \
+            -destination 'platform=iOS Simulator,name=iPhone 15'
+
+  lint:
+    name: SwiftLint
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: swiftlint lint --strict
+
+  validate-migrations:
+    name: Validate Migrations
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Validate migration files
+        run: |
+          if [ -d "supabase/migrations" ] && [ "$(ls -A supabase/migrations)" ]; then
+            echo "Validating migration SQL syntax..."
+            for file in supabase/migrations/*.sql; do
+              if [ -f "$file" ]; then
+                echo "Checking $file"
+                # Basic SQL syntax check
+                if ! grep -q ";" "$file"; then
+                  echo "Error: $file may be missing SQL statements"
+                  exit 1
+                fi
+              fi
+            done
+            echo "All migration files validated"
+          else
+            echo "No migrations to validate"
+          fi
