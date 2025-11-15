@@ -1,3 +1,4 @@
+# SwiftLint Configuration
 disabled_rules:
   - trailing_whitespace
   - todo
