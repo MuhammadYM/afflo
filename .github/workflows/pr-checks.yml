@@ -14,7 +14,6 @@ jobs:
 
       - name: Build
         run: |
-          cd Afflo
           xcodebuild build \
             -project Afflo.xcodeproj \
             -scheme Afflo \
