@@ -12,11 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode version
-        run: sudo xcode-select -s /Applications/Xcode_15.0.app/Contents/Developer
-
       - name: Build
         run: |
+          cd Afflo
           xcodebuild build \
             -project Afflo.xcodeproj \
             -scheme Afflo \
@@ -33,7 +31,9 @@ jobs:
         run: brew install swiftlint
 
       - name: Run SwiftLint
-        run: swiftlint lint --strict
+        run: |
+          cd Afflo
+          swiftlint lint --strict
 
   validate-migrations:
     name: Validate Migrations
@@ -49,6 +49,7 @@ jobs:
 
       - name: Validate migration files
         run: |
+          cd Afflo
           if [ -d "supabase/migrations" ] && [ "$(ls -A supabase/migrations)" ]; then
             echo "Validating migration SQL syntax..."
             for file in supabase/migrations/*.sql; do

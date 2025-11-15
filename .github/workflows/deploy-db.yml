@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'supabase/migrations/**'
-      - 'supabase/seed.sql'
+      - 'Afflo/supabase/migrations/**'
+      - 'Afflo/supabase/seed.sql'
 
 jobs:
   deploy:
@@ -26,12 +26,14 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
         run: |
+          cd Afflo
           supabase link --project-ref $SUPABASE_PROJECT_ID
 
       - name: Push database changes
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
+          cd Afflo
           echo "Pushing migrations to production..."
           supabase db push --linked
 
@@ -39,6 +41,7 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
+          cd Afflo
           echo "Verifying database connection..."
           supabase db remote list
 
