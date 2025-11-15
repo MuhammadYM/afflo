@@ -5,8 +5,8 @@
 //  Created by Muhammad M on 11/9/25.
 //
 
-import SwiftUI
 import CoreData
+import SwiftUI
 
 @main
 struct AffloApp: App {

@@ -1,6 +1,6 @@
+import Combine
 import Foundation
 import Supabase
-import Combine
 
 struct OnboardingQuestion {
     let id: String
@@ -35,7 +35,7 @@ class OnboardingViewModel: ObservableObject {
     }
 
     var canProceed: Bool {
-        currentAnswer.trimmingCharacters(in: .whitespacesAndNewlines).count > 0
+        !currentAnswer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     func updateAnswer(_ text: String) {

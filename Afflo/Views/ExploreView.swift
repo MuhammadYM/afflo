@@ -19,18 +19,21 @@ struct ExploreView: View {
                 Spacer()
 
                 #if DEBUG
-                Button(action: {
-                    Task {
-                        await authViewModel.signOut()
+                Button(
+                    action: {
+                        Task {
+                            await authViewModel.signOut()
+                        }
+                    },
+                    label: {
+                        Text("Reset App (Debug Only)")
+                            .font(.anonymousPro(size: 14))
+                            .foregroundColor(.red)
+                            .padding()
+                            .background(Color.red.opacity(0.1))
+                            .cornerRadius(8)
                     }
-                }) {
-                    Text("Reset App (Debug Only)")
-                        .font(.anonymousPro(size: 14))
-                        .foregroundColor(.red)
-                        .padding()
-                        .background(Color.red.opacity(0.1))
-                        .cornerRadius(8)
-                }
+                )
                 .padding(.bottom, 40)
                 #endif
             }
