@@ -68,33 +68,39 @@ struct OnboardingView: View {
 
                 // Footer with navigation buttons
                 HStack(spacing: 12) {
-                    Button(action: {
-                        viewModel.handleBack()
-                    }) {
-                        Text("Back")
-                            .font(.anonymousPro(size: 16))
-                            .foregroundColor(Color(hex: "#2B2B2B"))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 48)
-                            .background(Color.buttonGray)
-                            .cornerRadius(12)
-                    }
+                    Button(
+                        action: {
+                            viewModel.handleBack()
+                        },
+                        label: {
+                            Text("Back")
+                                .font(.anonymousPro(size: 16))
+                                .foregroundColor(Color(hex: "#2B2B2B"))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 48)
+                                .background(Color.buttonGray)
+                                .cornerRadius(12)
+                        }
+                    )
                     .disabled(viewModel.stepIndex == 0 || viewModel.isSubmitting)
                     .opacity(viewModel.stepIndex == 0 || viewModel.isSubmitting ? 0.6 : 1.0)
 
-                    Button(action: {
-                        Task {
-                            await viewModel.handleNext(onComplete: onComplete)
+                    Button(
+                        action: {
+                            Task {
+                                await viewModel.handleNext(onComplete: onComplete)
+                            }
+                        },
+                        label: {
+                            Text(viewModel.isSubmitting ? "Saving..." : (viewModel.isLastStep ? "Finish" : "Next"))
+                                .font(.custom("AnonymousPro-Bold", size: 16))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 48)
+                                .background(Color.buttonBlack)
+                                .cornerRadius(12)
                         }
-                    }) {
-                        Text(viewModel.isSubmitting ? "Saving..." : (viewModel.isLastStep ? "Finish" : "Next"))
-                            .font(.custom("AnonymousPro-Bold", size: 16))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 48)
-                            .background(Color.buttonBlack)
-                            .cornerRadius(12)
-                    }
+                    )
                     .disabled(!viewModel.canProceed || viewModel.isSubmitting)
                     .opacity(!viewModel.canProceed || viewModel.isSubmitting ? 0.4 : 1.0)
                 }

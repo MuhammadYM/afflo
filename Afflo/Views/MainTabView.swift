@@ -17,7 +17,7 @@ struct MainTabView: View {
                 }
                 .tag(1)
         }
-        .onChange(of: selectedTab) { oldValue, newValue in
+        .onChange(of: selectedTab) { _, _ in
             // Haptic feedback on tab change
             let impact = UIImpactFeedbackGenerator(style: .light)
             impact.impactOccurred()

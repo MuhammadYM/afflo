@@ -1,6 +1,6 @@
-import SwiftUI
 import AuthenticationServices
 import CryptoKit
+import SwiftUI
 
 struct AuthView: View {
     @Environment(\.colorScheme) var colorScheme
@@ -36,17 +36,20 @@ struct AuthView: View {
                 // Footer with buttons
                 VStack(spacing: 15) {
                     // Google Sign Up button (placeholder)
-                    Button(action: {
-                        // TODO: Implement Google sign-in
-                    }) {
-                        Text("SIGN UP WITH GOOGLE")
-                            .font(.anonymousPro(size: 16))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 15)
-                            .background(Color.black)
-                            .cornerRadius(8)
-                    }
+                    Button(
+                        action: {
+                            // TODO: Implement Google sign-in
+                        },
+                        label: {
+                            Text("SIGN UP WITH GOOGLE")
+                                .font(.anonymousPro(size: 16))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 15)
+                                .background(Color.black)
+                                .cornerRadius(8)
+                        }
+                    )
 
                     // Apple Sign In button
                     SignInWithAppleButton(.signUp) { request in
