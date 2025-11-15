@@ -17,7 +17,7 @@ jobs:
           xcodebuild build \
             -project Afflo.xcodeproj \
             -scheme Afflo \
-            -destination 'platform=iOS Simulator,name=Any iOS Simulator Device'
+            -destination 'generic/platform=iOS Simulator'
 
   lint:
     name: SwiftLint
