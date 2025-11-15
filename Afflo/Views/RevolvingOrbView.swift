@@ -15,7 +15,7 @@ struct RevolvingOrbView: View {
     var complexity: CGFloat = 3
     var color1: Color = Color(red: 0.33, green: 0.51, blue: 1.0) // #5481FF
     var color2: Color = Color(red: 0.32, green: 1.0, blue: 0.98) // #51FFF9
-    var animationStyle: OrbAnimationStyle = .simple
+    var animationStyle: OrbAnimationStyle = .layeredBlob
     
     var body: some View {
         TimelineView(.animation) { timeline in
@@ -57,15 +57,42 @@ struct RevolvingOrbView: View {
                 .color(color1),
                 .color(color2)
             )
+        case .simplifiedDomainWarp:
+            return ShaderLibrary.simplifiedDomainWarpOrb(
+                .float2(orbSize, orbSize),
+                .float(elapsedTime),
+                .float(speed),
+                .color(color1),
+                .color(color2)
+            )
+        case .fullDomainWarp:
+            return ShaderLibrary.fullDomainWarpOrb(
+                .float2(orbSize, orbSize),
+                .float(elapsedTime),
+                .float(speed),
+                .color(color1),
+                .color(color2)
+            )
+        case .layeredBlob:
+            return ShaderLibrary.layeredBlobOrb(
+                .float2(orbSize, orbSize),
+                .float(elapsedTime),
+                .float(speed),
+                .color(color1),
+                .color(color2)
+            )
         }
     }
 }
 
 // MARK: - Animation Style
 enum OrbAnimationStyle {
-    case simple      // Best performance, smooth revolving blobs
-    case complex     // More detail with noise, slightly heavier
-    case liquid      // Fluid, flowing effect
+    case simple                 // Best performance, smooth revolving blobs
+    case complex                // More detail with noise, slightly heavier
+    case liquid                 // Fluid, flowing effect
+    case simplifiedDomainWarp   // Single-layer domain warping, water-like flow
+    case fullDomainWarp         // Multi-layer domain warping, complex water effect
+    case layeredBlob            // Three overlapping blobs, no border - matches design
 }
 
 // MARK: - Revolving Orb Modifier
@@ -115,6 +142,30 @@ struct RevolvingOrbModifier: ViewModifier {
                 .color(color1),
                 .color(color2)
             )
+        case .simplifiedDomainWarp:
+            return ShaderLibrary.simplifiedDomainWarpOrb(
+                .boundingRect,
+                .float(elapsedTime),
+                .float(speed),
+                .color(color1),
+                .color(color2)
+            )
+        case .fullDomainWarp:
+            return ShaderLibrary.fullDomainWarpOrb(
+                .boundingRect,
+                .float(elapsedTime),
+                .float(speed),
+                .color(color1),
+                .color(color2)
+            )
+        case .layeredBlob:
+            return ShaderLibrary.layeredBlobOrb(
+                .boundingRect,
+                .float(elapsedTime),
+                .float(speed),
+                .color(color1),
+                .color(color2)
+            )
         }
     }
 }
@@ -142,7 +193,7 @@ struct RevolvingOrbDemo: View {
     @State private var orbSize: CGFloat = 300
     @State private var blobCount: CGFloat = 3
     @State private var complexity: CGFloat = 3
-    @State private var selectedStyle: OrbAnimationStyle = .simple
+    @State private var selectedStyle: OrbAnimationStyle = .layeredBlob
     @State private var useCustomColors = false
     @State private var customColor1 = Color(red: 0.33, green: 0.51, blue: 1.0)
     @State private var customColor2 = Color(red: 0.32, green: 1.0, blue: 0.98)
@@ -174,12 +225,20 @@ struct RevolvingOrbDemo: View {
                     .padding(.top)
                 
                 // Style Picker
-                Picker("Style", selection: $selectedStyle) {
-                    Text("Simple").tag(OrbAnimationStyle.simple)
-                    Text("Complex").tag(OrbAnimationStyle.complex)
-                    Text("Liquid").tag(OrbAnimationStyle.liquid)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Style")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Picker("Style", selection: $selectedStyle) {
+                        Text("Layered Blob (Design Match)").tag(OrbAnimationStyle.layeredBlob)
+                        Text("Simple").tag(OrbAnimationStyle.simple)
+                        Text("Complex").tag(OrbAnimationStyle.complex)
+                        Text("Liquid").tag(OrbAnimationStyle.liquid)
+                        Text("Domain Warp (Simple)").tag(OrbAnimationStyle.simplifiedDomainWarp)
+                        Text("Domain Warp (Full)").tag(OrbAnimationStyle.fullDomainWarp)
+                    }
+                    .pickerStyle(.menu)
                 }
-                .pickerStyle(.segmented)
                 .padding(.horizontal)
                 
                 ScrollView {
