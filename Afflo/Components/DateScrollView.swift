@@ -43,7 +43,7 @@ struct DateScrollView: View {
 
             // Scrollable future dates with gradient fade
             GeometryReader { geometry in
-                ZStack(alignment: .trailing) {
+                ZStack {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
                             ForEach(Array(futureDates.prefix(30).enumerated()), id: \.element) { index, date in
@@ -61,18 +61,39 @@ struct DateScrollView: View {
                         .padding(.trailing, 40)
                     }
 
-                    // Gradient fade on trailing edge
-                    LinearGradient(
-                        colors: [
-                            Color.background(for: colorScheme).opacity(0),
-                            Color.background(for: colorScheme).opacity(0.8),
-                            Color.background(for: colorScheme)
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                    .frame(width: 60)
-                    .allowsHitTesting(false)
+                    // Gradient fade on leading (left) edge
+                    HStack {
+                        LinearGradient(
+                            colors: [
+                                Color.background(for: colorScheme),
+                                Color.background(for: colorScheme).opacity(0.8),
+                                Color.background(for: colorScheme).opacity(0)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                        .frame(width: 40)
+                        .allowsHitTesting(false)
+
+                        Spacer()
+                    }
+
+                    // Gradient fade on trailing (right) edge
+                    HStack {
+                        Spacer()
+
+                        LinearGradient(
+                            colors: [
+                                Color.background(for: colorScheme).opacity(0),
+                                Color.background(for: colorScheme).opacity(0.8),
+                                Color.background(for: colorScheme)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                        .frame(width: 60)
+                        .allowsHitTesting(false)
+                    }
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height)
             }
