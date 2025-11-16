@@ -60,8 +60,8 @@ struct TaskComponent: View {
                 if showAddField {
                     HStack(spacing: 12) {
                         Circle()
-                            .stroke(Color.tint(for: colorScheme), lineWidth: 0.8)
-                            .frame(width: 9, height: 9)
+                            .stroke(Color.tint(for: colorScheme), lineWidth: 0.6)
+                            .frame(width: 6, height: 6)
 
                         TextField("Add a task...", text: $newTaskText)
                             .focused($isAddFieldFocused)
@@ -86,7 +86,7 @@ struct TaskComponent: View {
                     HStack(spacing: 12) {
                         Circle()
                             .strokeBorder(
-                                style: StrokeStyle(lineWidth: 2, dash: [5, 5])
+                                style: StrokeStyle(lineWidth: 1, dash: [5, 5])
                             )
                             .foregroundColor(Color.black)
                             .frame(width: 20, height: 20)
