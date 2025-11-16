@@ -1,8 +1,9 @@
-import Foundation
-import CoreData
 import Combine
+import CoreData
+import Foundation
+import Supabase
 
-struct Task: Identifiable, Codable {
+struct TaskModel: Identifiable, Codable {
     let id: UUID
     var text: String
     var isCompleted: Bool
@@ -40,7 +41,7 @@ struct TaskUpsert: Codable {
 
 @MainActor
 class TaskViewModel: ObservableObject {
-    @Published var tasks: [Task] = []
+    @Published var tasks: [TaskModel] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -73,7 +74,7 @@ class TaskViewModel: ObservableObject {
 
             if networkMonitor.isConnected {
                 // Fetch from Supabase
-                let response: [Task] = try await supabase
+                let response: [TaskModel] = try await supabase
                     .from("tasks")
                     .select()
                     .eq("user_id", value: userId)
@@ -105,7 +106,7 @@ class TaskViewModel: ObservableObject {
 
         do {
             let userId = try await getUserId()
-            let newTask = Task(
+            let newTask = TaskModel(
                 id: UUID(),
                 text: text,
                 isCompleted: false,
@@ -211,7 +212,7 @@ class TaskViewModel: ObservableObject {
 
     // MARK: - Private Methods
 
-    private func sortTasks(_ tasks: [Task]) -> [Task] {
+    private func sortTasks(_ tasks: [TaskModel]) -> [TaskModel] {
         let incomplete = tasks.filter { !$0.isCompleted }.sorted { $0.order < $1.order }
         let completed = tasks.filter { $0.isCompleted }
         return incomplete + completed
@@ -222,7 +223,7 @@ class TaskViewModel: ObservableObject {
         return session.user.id.uuidString
     }
 
-    private func saveToSupabase(task: Task) async throws {
+    private func saveToSupabase(task: TaskModel) async throws {
         let upsert = TaskUpsert(
             id: task.id,
             text: task.text,
@@ -286,7 +287,7 @@ class TaskViewModel: ObservableObject {
                     let userId = item.value(forKey: "userId") as? String
                 else { return nil }
 
-                return Task(
+                return TaskModel(
                     id: id,
                     text: text,
                     isCompleted: isCompleted,
@@ -302,7 +303,7 @@ class TaskViewModel: ObservableObject {
         }
     }
 
-    private func queueOperation(type: String, taskId: UUID, task: Task) async {
+    private func queueOperation(type: String, taskId: UUID, task: TaskModel) async {
         let context = viewContext
 
         do {
@@ -339,7 +340,7 @@ class TaskViewModel: ObservableObject {
                 else { continue }
 
                 let decoder = JSONDecoder()
-                let task = try decoder.decode(Task.self, from: payloadData)
+                let task = try decoder.decode(TaskModel.self, from: payloadData)
 
                 // Execute operation
                 switch type {

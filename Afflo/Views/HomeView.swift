@@ -24,6 +24,11 @@ struct HomeView: View {
                 .padding(.leading, 28)
                 .padding(.trailing, 28)
 
+                TaskComponent()
+                    .padding(.top, 20)
+                    .padding(.leading, 28)
+                    .padding(.trailing, 28)
+
                 Spacer()
 
                 #if DEBUG
