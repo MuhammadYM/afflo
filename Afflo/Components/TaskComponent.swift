@@ -60,8 +60,8 @@ struct TaskComponent: View {
                 if showAddField {
                     HStack(spacing: 12) {
                         Circle()
-                            .stroke(Color.tint(for: colorScheme), lineWidth: 2)
-                            .frame(width: 20, height: 20)
+                            .stroke(Color.tint(for: colorScheme), lineWidth: 0.8)
+                            .frame(width: 9, height: 9)
 
                         TextField("Add a task...", text: $newTaskText)
                             .focused($isAddFieldFocused)
@@ -82,21 +82,21 @@ struct TaskComponent: View {
 
                 // Task list or empty state
                 if viewModel.tasks.isEmpty && !showAddField {
-                    // Empty state
-                    VStack(spacing: 12) {
+                    // Empty state - show as task entry format
+                    HStack(spacing: 12) {
                         Circle()
                             .strokeBorder(
                                 style: StrokeStyle(lineWidth: 2, dash: [5, 5])
                             )
-                            .foregroundColor(Color.icon(for: colorScheme).opacity(0.5))
-                            .frame(width: 40, height: 40)
+                            .foregroundColor(Color.black)
+                            .frame(width: 20, height: 20)
 
                         Text("Add a task...")
-                            .font(.anonymousPro(size: 14))
+                            .font(.anonymousPro(size: 15))
                             .foregroundColor(Color.icon(for: colorScheme))
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 32)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
                 } else {
                     ScrollView {
                         VStack(spacing: 0) {
