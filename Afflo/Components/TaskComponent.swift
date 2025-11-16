@@ -27,13 +27,23 @@ struct TaskComponent: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 0) {
                 // Header
                 HStack {
                     Text("Tasks")
                         .font(.anonymousPro(size: 16))
                         .foregroundColor(Color.text(for: colorScheme))
+
+                    // Show error indicator
+                    if let error = viewModel.errorMessage {
+                        Text("⚠️")
+                            .font(.system(size: 14))
+                            .foregroundColor(.red)
+                            .onTapGesture {
+                                print("TaskViewModel Error: \(error)")
+                            }
+                    }
 
                     Spacer()
 
@@ -47,7 +57,7 @@ struct TaskComponent: View {
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 15, height: 15)
-                                .foregroundColor(Color.tint(for: colorScheme))
+                                .foregroundColor(Color.text(for: colorScheme))
                         }
                     )
                     .buttonStyle(PlainButtonStyle())
@@ -55,29 +65,6 @@ struct TaskComponent: View {
                 .padding(.horizontal, 10)
                 .padding(.top, 10)
                 .padding(.bottom, 6)
-
-                // Add task field
-                if showAddField {
-                    HStack(spacing: 12) {
-                        Circle()
-                            .strokeBorder(
-                                style: StrokeStyle(lineWidth: 1, dash: [2, 2.14])
-                            )
-                            .foregroundColor(Color.black)
-                            .frame(width: 12, height: 12)
-
-                        TextField("Add a task...", text: $newTaskText)
-                            .focused($isAddFieldFocused)
-                            .font(.anonymousPro(size: 15))
-                            .foregroundColor(Color.text(for: colorScheme))
-                            .submitLabel(.done)
-                            .onSubmit {
-                                addTask()
-                            }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                }
 
                 Divider()
                     .background(Color.tint(for: colorScheme).opacity(0.3))
@@ -91,7 +78,7 @@ struct TaskComponent: View {
                             .strokeBorder(
                                 style: StrokeStyle(lineWidth: 1, dash: [2, 2.14])
                             )
-                            .foregroundColor(Color.black)
+                            .foregroundColor(Color.text(for: colorScheme))
                             .frame(width: 12, height: 12)
 
                         Text("Add a task...")
@@ -100,6 +87,10 @@ struct TaskComponent: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
+                    .onTapGesture {
+                        showAddField = true
+                        isAddFieldFocused = true
+                    }
                 } else {
                     ScrollView {
                         VStack(spacing: 0) {
@@ -123,12 +114,29 @@ struct TaskComponent: View {
                                         }
                                     }
                                 )
+                            }
 
-                                if task.id != visibleTasks.last?.id {
-                                    Divider()
-                                        .background(Color.tint(for: colorScheme).opacity(0.2))
-                                        .padding(.horizontal, 16)
+                            // Add task field at bottom
+                            if showAddField {
+                                HStack(spacing: 12) {
+                                    Circle()
+                                        .strokeBorder(
+                                            style: StrokeStyle(lineWidth: 1, dash: [2, 2.14])
+                                        )
+                                        .foregroundColor(Color.text(for: colorScheme))
+                                        .frame(width: 12, height: 12)
+
+                                    TextField("Add a task...", text: $newTaskText)
+                                        .focused($isAddFieldFocused)
+                                        .font(.anonymousPro(size: 15))
+                                        .foregroundColor(Color.text(for: colorScheme))
+                                        .submitLabel(.done)
+                                        .onSubmit {
+                                            addTask()
+                                        }
                                 }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
                             }
                         }
                     }
@@ -171,9 +179,16 @@ struct TaskComponent: View {
             }
 
             // Toast notification
-            ToastView(show: $showToast, message: $toastMessage)
-                .frame(width: 327)
+            if showToast {
+                VStack {
+                    Spacer()
+                    ToastView(show: $showToast, message: $toastMessage)
+                        .frame(width: 327)
+                }
+            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .fixedSize(horizontal: false, vertical: true)
         .task {
             await viewModel.loadTasks()
         }

@@ -12,26 +12,24 @@ struct HomeView: View {
             BackgroundGridOverlay()
 
             VStack(alignment: .leading, spacing: 0) {
-                VStack(alignment: .leading, spacing: 0) {
-                    DateScrollView()
-                        .padding(.top, 60)
+                DateScrollView()
+                    .padding(.top, 60)
 
-                    HStack(spacing: 20) {
-                        VoiceJournalComponent()
+                HStack(spacing: 20) {
+                    VoiceJournalComponent()
 
-                        FocusMetric()
-                    }
-                    .frame(height: 100)
-                    .padding(.top, 36)
+                    FocusMetric()
+                }
+                .frame(height: 100)
+                .padding(.top, 36)
+                .padding(.leading, 28)
+                .padding(.trailing, 28)
+
+                TaskComponent()
+                    .padding(.top, 20)
                     .padding(.leading, 28)
                     .padding(.trailing, 28)
 
-                    TaskComponent()
-                        .padding(.top, 20)
-                        .padding(.leading, 28)
-                        .padding(.trailing, 28)
-                }
-                
                 Spacer()
 
                 #if DEBUG

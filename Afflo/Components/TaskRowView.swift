@@ -31,13 +31,16 @@ struct TaskRowView: View {
             Button(action: onToggle) {
                 ZStack {
                     Circle()
-                        .stroke(Color.tint(for: colorScheme), lineWidth: 2)
-                        .frame(width: 20, height: 20)
+                        .strokeBorder(
+                            style: StrokeStyle(lineWidth: 1, dash: [2, 2.14])
+                        )
+                        .foregroundColor(Color.text(for: colorScheme))
+                        .frame(width: 12, height: 12)
 
                     if task.isCompleted {
                         Circle()
-                            .fill(Color.tint(for: colorScheme))
-                            .frame(width: 12, height: 12)
+                            .fill(Color.text(for: colorScheme))
+                            .frame(width: 6, height: 6)
                     }
                 }
             }

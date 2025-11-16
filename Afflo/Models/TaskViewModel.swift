@@ -106,11 +106,16 @@ class TaskViewModel: ObservableObject {
 
         do {
             let userId = try await getUserId()
+            // Get max order from incomplete tasks and add 1 to ensure new task appears at bottom
+            let incompleteTasks = tasks.filter { !$0.isCompleted }
+            let maxOrder = incompleteTasks.map { $0.order }.max() ?? -1
+            let newOrder = maxOrder + 1
+
             let newTask = TaskModel(
                 id: UUID(),
                 text: text,
                 isCompleted: false,
-                order: Int16(tasks.filter { !$0.isCompleted }.count),
+                order: newOrder,
                 createdAt: Date(),
                 updatedAt: Date(),
                 userId: userId
@@ -128,6 +133,7 @@ class TaskViewModel: ObservableObject {
             await saveToCoreData(userId: userId)
         } catch {
             errorMessage = error.localizedDescription
+            print("❌ TaskViewModel.addTask error: \(error)")
         }
     }
 
@@ -219,8 +225,14 @@ class TaskViewModel: ObservableObject {
     }
 
     private func getUserId() async throws -> String {
-        let session = try await supabase.auth.session
-        return session.user.id.uuidString
+        do {
+            let session = try await supabase.auth.session
+            return session.user.id.uuidString
+        } catch {
+            // Fallback for development (no auth)
+            print("⚠️ No auth session, using dev user ID")
+            return "00000000-0000-0000-0000-000000000000"
+        }
     }
 
     private func saveToSupabase(task: TaskModel) async throws {
