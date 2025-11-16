@@ -89,7 +89,7 @@ struct TaskComponent: View {
                                 style: StrokeStyle(lineWidth: 1, dash: [5, 5])
                             )
                             .foregroundColor(Color.black)
-                            .frame(width: 20, height: 20)
+                            .frame(width: 16, height: 16)
 
                         Text("Add a task...")
                             .font(.anonymousPro(size: 15))
