@@ -46,22 +46,25 @@ struct TaskComponent: View {
                             Image("documents-add-icon")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 18, height: 18)
+                                .frame(width: 15, height: 15)
                                 .foregroundColor(Color.tint(for: colorScheme))
                         }
                     )
                     .buttonStyle(PlainButtonStyle())
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
+                .padding(.horizontal, 10)
+                .padding(.top, 10)
+                .padding(.bottom, 6)
 
                 // Add task field
                 if showAddField {
                     HStack(spacing: 12) {
                         Circle()
-                            .stroke(Color.tint(for: colorScheme), lineWidth: 0.6)
-                            .frame(width: 6, height: 6)
+                            .strokeBorder(
+                                style: StrokeStyle(lineWidth: 1, dash: [2, 2.14])
+                            )
+                            .foregroundColor(Color.black)
+                            .frame(width: 12, height: 12)
 
                         TextField("Add a task...", text: $newTaskText)
                             .focused($isAddFieldFocused)
@@ -86,10 +89,10 @@ struct TaskComponent: View {
                     HStack(spacing: 12) {
                         Circle()
                             .strokeBorder(
-                                style: StrokeStyle(lineWidth: 1, dash: [5, 5])
+                                style: StrokeStyle(lineWidth: 1, dash: [2, 2.14])
                             )
                             .foregroundColor(Color.black)
-                            .frame(width: 16, height: 16)
+                            .frame(width: 12, height: 12)
 
                         Text("Add a task...")
                             .font(.anonymousPro(size: 15))
@@ -129,7 +132,7 @@ struct TaskComponent: View {
                             }
                         }
                     }
-                    .frame(maxHeight: isExpanded ? .infinity : CGFloat(maxVisibleTasks * 50))
+                    .frame(maxHeight: isExpanded ? 400 : CGFloat(maxVisibleTasks * 50))
                 }
 
                 // Expand/collapse indicator
@@ -149,6 +152,7 @@ struct TaskComponent: View {
                     }
                 }
             }
+            .padding(.bottom, 10)
             .frame(width: 327)
             .background(Color.background(for: colorScheme))
             .overlay(
