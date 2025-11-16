@@ -149,7 +149,7 @@ private struct DateItemView: View {
                         .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
 
                     Text(dayNumber)
-                        .font(.montserrat(size: 10, weight: .bold))
+                        .font(.anonymousPro(size: 10, weight: .bold))
                         .foregroundColor(Color.text(for: colorScheme))
 
                     // Selection underline
