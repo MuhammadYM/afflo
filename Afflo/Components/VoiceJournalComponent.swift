@@ -21,8 +21,8 @@ struct VoiceJournalComponent: View {
                         .multilineTextAlignment(.center)
                         .lineSpacing(2)
                 }
-                .padding(.vertical, 19)
-                .frame(width: 182)
+                .padding(.vertical, 1)
+                .frame(width: 182, height: 100)
                 .background(Color.background(for: colorScheme))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
