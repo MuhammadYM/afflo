@@ -15,6 +15,11 @@ struct HomeView: View {
                 DateScrollView()
                     .padding(.top, 60)
 
+                VoiceJournalComponent()
+                    .padding(.top, 36)
+                    .padding(.leading, 28)
+                    .padding(.trailing, 16)
+
                 Spacer()
 
                 #if DEBUG
