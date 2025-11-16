@@ -12,6 +12,10 @@ struct Typography {
     static let bold = "AnonymousPro-Bold"
     static let italic = "AnonymousPro-Italic"
     static let boldItalic = "AnonymousPro-BoldItalic"
+
+    // Font names for Montserrat
+    static let montserratRegular = "Montserrat-Regular"
+    static let montserratBold = "Montserrat-Bold"
 }
 
 // MARK: - Font Extension
@@ -45,5 +49,16 @@ extension Font {
 
     static var affloLink: Font {
         .custom(Typography.regular, size: Typography.defaultSize)
+    }
+
+    static func montserrat(size: CGFloat = Typography.defaultSize, weight: Font.Weight = .regular) -> Font {
+        let fontName: String
+        switch weight {
+        case .bold:
+            fontName = Typography.montserratBold
+        default:
+            fontName = Typography.montserratRegular
+        }
+        return .custom(fontName, size: size)
     }
 }
