@@ -134,16 +134,15 @@ private struct DateItemView: View {
                         .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
 
                     // Selection underline
-                    if isSelected {
-                        Rectangle()
-                            .fill(Color.text(for: colorScheme))
-                            .frame(width: 30, height: 2)
-                    }
+                    Rectangle()
+                        .fill(Color(hex: "FFA704"))
+                        .frame(width: 30, height: 1)
+                        .opacity(isSelected ? 1 : 0)
                 }
                 .padding(.vertical, 8)
                 .padding(.horizontal, 12)
             } else {
-                // Other dates: vertical layout
+                // Other dates: vertical layout (no month)
                 VStack(spacing: 2) {
                     Text(dayName)
                         .font(.montserrat(size: 10, weight: .regular))
@@ -153,16 +152,11 @@ private struct DateItemView: View {
                         .font(.montserrat(size: 10, weight: .bold))
                         .foregroundColor(Color.text(for: colorScheme))
 
-                    Text(monthName)
-                        .font(.montserrat(size: 10, weight: .regular))
-                        .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
-
                     // Selection underline
-                    if isSelected {
-                        Rectangle()
-                            .fill(Color.text(for: colorScheme))
-                            .frame(width: 20, height: 2)
-                    }
+                    Rectangle()
+                        .fill(Color(hex: "FFA704"))
+                        .frame(width: 20, height: 1)
+                        .opacity(isSelected ? 1 : 0)
                 }
                 .padding(.vertical, 6)
                 .padding(.horizontal, 8)
