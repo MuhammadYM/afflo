@@ -41,24 +41,42 @@ struct DateScrollView: View {
                 selectedDate = today
             }
 
-            // Scrollable future dates
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(Array(futureDates.prefix(30).enumerated()), id: \.element) { index, date in
-                        DateItemView(
-                            date: date,
-                            isToday: false,
-                            isSelected: calendar.isDate(selectedDate, inSameDayAs: date),
-                            displayIndex: index + 1
-                        )
-                        .opacity(index == 6 ? 0.4 : 1.0) // Fade 7th day
-                        .onTapGesture {
-                            selectedDate = date
+            // Scrollable future dates with gradient fade
+            GeometryReader { geometry in
+                ZStack(alignment: .trailing) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(Array(futureDates.prefix(30).enumerated()), id: \.element) { index, date in
+                                DateItemView(
+                                    date: date,
+                                    isToday: false,
+                                    isSelected: calendar.isDate(selectedDate, inSameDayAs: date),
+                                    displayIndex: index + 1
+                                )
+                                .onTapGesture {
+                                    selectedDate = date
+                                }
+                            }
                         }
+                        .padding(.trailing, 40)
                     }
+
+                    // Gradient fade on trailing edge
+                    LinearGradient(
+                        colors: [
+                            Color.background(for: colorScheme).opacity(0),
+                            Color.background(for: colorScheme).opacity(0.8),
+                            Color.background(for: colorScheme)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: 60)
+                    .allowsHitTesting(false)
                 }
-                .padding(.trailing, 16)
+                .frame(width: geometry.size.width, height: geometry.size.height)
             }
+            .frame(height: 60)
         }
         .padding(.horizontal, 16)
     }
@@ -96,48 +114,60 @@ private struct DateItemView: View {
         return formatter.string(from: date)
     }
 
-    // Progressive scaling
-    private var scale: CGFloat {
-        if isToday {
-            return 1.0
-        }
-
-        switch displayIndex {
-        case 1: return 0.95
-        case 2: return 0.90
-        case 3: return 0.85
-        case 4: return 0.80
-        case 5: return 0.75
-        case 6: return 0.70
-        default: return 0.70
-        }
-    }
-
     var body: some View {
-        VStack(spacing: 4) {
-            Text(dayName)
-                .font(.anonymousPro(size: isToday ? 14 : 12, weight: .regular))
-                .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
+        Group {
+            if isToday {
+                // Today's date: horizontal layout (day + number) with month below
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 4) {
+                        Text(dayName)
+                            .font(.montserrat(size: 20, weight: .regular))
+                            .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
 
-            Text(dayNumber)
-                .font(.anonymousPro(size: isToday ? 32 : 24, weight: .bold))
-                .foregroundColor(Color.text(for: colorScheme))
+                        Text(dayNumber)
+                            .font(.montserrat(size: 20, weight: .bold))
+                            .foregroundColor(Color.text(for: colorScheme))
+                    }
 
-            Text(monthName)
-                .font(.anonymousPro(size: isToday ? 14 : 12, weight: .regular))
-                .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
+                    Text(monthName)
+                        .font(.montserrat(size: 10, weight: .regular))
+                        .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
+
+                    // Selection underline
+                    if isSelected {
+                        Rectangle()
+                            .fill(Color.text(for: colorScheme))
+                            .frame(width: 30, height: 2)
+                    }
+                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+            } else {
+                // Other dates: vertical layout
+                VStack(spacing: 2) {
+                    Text(dayName)
+                        .font(.montserrat(size: 10, weight: .regular))
+                        .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
+
+                    Text(dayNumber)
+                        .font(.montserrat(size: 10, weight: .bold))
+                        .foregroundColor(Color.text(for: colorScheme))
+
+                    Text(monthName)
+                        .font(.montserrat(size: 10, weight: .regular))
+                        .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
+
+                    // Selection underline
+                    if isSelected {
+                        Rectangle()
+                            .fill(Color.text(for: colorScheme))
+                            .frame(width: 20, height: 2)
+                    }
+                }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 8)
+            }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, isToday ? 16 : 12)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(isSelected ? Color.text(for: colorScheme).opacity(0.1) : Color.clear)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(isSelected ? Color.text(for: colorScheme) : Color.clear, lineWidth: 1)
-        )
-        .scaleEffect(scale)
     }
 }
 

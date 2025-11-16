@@ -11,12 +11,9 @@ struct HomeView: View {
 
             BackgroundGridOverlay()
 
-            VStack(spacing: 24) {
-                Text("Home")
-                    .font(.anonymousPro(size: 24))
-                    .foregroundColor(Color.text(for: colorScheme))
-
+            VStack(alignment: .leading, spacing: 0) {
                 DateScrollView()
+                    .padding(.top, 60)
 
                 Spacer()
 
