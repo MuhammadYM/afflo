@@ -51,9 +51,10 @@ class TaskViewModel: ObservableObject {
     private let viewContext: NSManagedObjectContext
     private let networkMonitor = NetworkMonitor.shared
     private var cancellables = Set<AnyCancellable>()
+    private var retryTask: Task<Void, Never>?
 
-    init(viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
-        self.viewContext = viewContext
+    init(viewContext: NSManagedObjectContext? = nil) {
+        self.viewContext = viewContext ?? PersistenceController.shared.container.viewContext
 
         // Listen for network changes and sync when connected
         networkMonitor.$isConnected
@@ -62,9 +63,60 @@ class TaskViewModel: ObservableObject {
                     Task {
                         await self?.syncWithSupabase()
                     }
+                    // Start periodic retry for pending operations
+                    self?.startPeriodicRetry()
+                } else {
+                    // Stop retry when offline
+                    self?.stopPeriodicRetry()
                 }
             }
             .store(in: &cancellables)
+        
+        // Start retry if already connected
+        if networkMonitor.isConnected {
+            startPeriodicRetry()
+        }
+    }
+    
+    deinit {
+        stopPeriodicRetry()
+    }
+    
+    private func startPeriodicRetry() {
+        // Cancel existing retry task
+        stopPeriodicRetry()
+        
+        // Retry every 30 seconds if there are pending operations
+        retryTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 30_000_000_000) // 30 seconds
+                guard !Task.isCancelled else { break }
+                await self?.retryPendingOperations()
+            }
+        }
+    }
+    
+    private func stopPeriodicRetry() {
+        retryTask?.cancel()
+        retryTask = nil
+    }
+    
+    private func retryPendingOperations() async {
+        guard networkMonitor.isConnected else { return }
+        
+        // Check if there are pending operations
+        let context = viewContext
+        let fetchRequest: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "PendingOperation")
+        
+        do {
+            let count = try context.count(for: fetchRequest)
+            if count > 0 {
+                print("🔄 Found \(count) pending operation(s), retrying sync...")
+                await syncWithSupabase()
+            }
+        } catch {
+            print("❌ Failed to check pending operations: \(error)")
+        }
     }
 
     func loadTasks() async {
@@ -75,7 +127,10 @@ class TaskViewModel: ObservableObject {
             let userId = try await getUserId()
 
             if networkMonitor.isConnected {
-                // Fetch from Supabase
+                // First, check if there are pending operations and sync them
+                await processPendingOperations()
+                
+                // Then fetch from Supabase
                 let response: [TaskModel] = try await supabase
                     .from("tasks")
                     .select()
@@ -94,6 +149,7 @@ class TaskViewModel: ObservableObject {
             }
         } catch {
             errorMessage = error.localizedDescription
+            print("❌ loadTasks error: \(error)")
             // Fallback to Core Data on error
             if let userId = try? await getUserId() {
                 await loadFromCoreData(userId: userId)
@@ -126,9 +182,18 @@ class TaskViewModel: ObservableObject {
             tasks.append(newTask)
             tasks = sortTasks(tasks)
 
+            // Try to save to Supabase if connected
             if networkMonitor.isConnected {
-                try await saveToSupabase(task: newTask)
+                do {
+                    try await saveToSupabase(task: newTask)
+                    print("✅ Task saved to Supabase immediately")
+                } catch {
+                    print("⚠️ Failed to save to Supabase (server may be down), queueing for later: \(error.localizedDescription)")
+                    // Queue for later if Supabase is unreachable
+                    await queueOperation(type: "create", taskId: newTask.id, task: newTask)
+                }
             } else {
+                print("📱 Device offline, queueing task for later sync")
                 await queueOperation(type: "create", taskId: newTask.id, task: newTask)
             }
 
@@ -149,14 +214,22 @@ class TaskViewModel: ObservableObject {
             let userId = try await getUserId()
 
             if networkMonitor.isConnected {
-                try await saveToSupabase(task: tasks[index])
+                do {
+                    try await saveToSupabase(task: tasks[index])
+                    print("✅ Task update saved to Supabase immediately")
+                } catch {
+                    print("⚠️ Failed to update in Supabase (server may be down), queueing for later: \(error.localizedDescription)")
+                    await queueOperation(type: "update", taskId: id, task: tasks[index])
+                }
             } else {
+                print("📱 Device offline, queueing update for later sync")
                 await queueOperation(type: "update", taskId: id, task: tasks[index])
             }
 
             await saveToCoreData(userId: userId)
         } catch {
             errorMessage = error.localizedDescription
+            print("❌ TaskViewModel.updateTask error: \(error)")
         }
     }
 
@@ -179,12 +252,17 @@ class TaskViewModel: ObservableObject {
 
             if networkMonitor.isConnected {
                 let updatedTask = tasks.first(where: { $0.id == id })!
-                try await saveToSupabase(task: updatedTask)
-                print("✅ Task toggled and saved to Supabase")
+                do {
+                    try await saveToSupabase(task: updatedTask)
+                    print("✅ Task toggled and saved to Supabase")
+                } catch {
+                    print("⚠️ Failed to toggle in Supabase (server may be down), queueing for later: \(error.localizedDescription)")
+                    await queueOperation(type: "update", taskId: id, task: updatedTask)
+                }
             } else {
                 let updatedTask = tasks.first(where: { $0.id == id })!
                 await queueOperation(type: "update", taskId: id, task: updatedTask)
-                print("✅ Task toggled and queued for sync")
+                print("📱 Device offline, task toggled and queued for sync")
             }
 
             await saveToCoreData(userId: userId)
@@ -203,29 +281,43 @@ class TaskViewModel: ObservableObject {
             let userId = try await getUserId()
 
             if networkMonitor.isConnected {
-                try await supabase
-                    .from("tasks")
-                    .delete()
-                    .eq("id", value: task.id.uuidString)
-                    .execute()
+                do {
+                    try await supabase
+                        .from("tasks")
+                        .delete()
+                        .eq("id", value: task.id.uuidString)
+                        .execute()
+                    print("✅ Task deleted from Supabase immediately")
+                } catch {
+                    print("⚠️ Failed to delete from Supabase (server may be down), queueing for later: \(error.localizedDescription)")
+                    await queueOperation(type: "delete", taskId: id, task: task)
+                }
             } else {
+                print("📱 Device offline, queueing delete for later sync")
                 await queueOperation(type: "delete", taskId: id, task: task)
             }
 
             await saveToCoreData(userId: userId)
         } catch {
             errorMessage = error.localizedDescription
+            print("❌ TaskViewModel.deleteTask error: \(error)")
         }
     }
 
     func syncWithSupabase() async {
         guard networkMonitor.isConnected else { return }
 
-        // Process pending operations
+        print("🔄 Starting sync with Supabase...")
+        
+        // Process pending operations FIRST and wait for completion
         await processPendingOperations()
+        
+        print("✅ Pending operations processed, now reloading from server...")
 
         // Reload tasks from server
         await loadTasks()
+        
+        print("✅ Sync complete")
     }
 
     // MARK: - Private Methods
@@ -333,6 +425,7 @@ class TaskViewModel: ObservableObject {
 
         do {
             let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
             let payload = try encoder.encode(task)
             let payloadString = String(data: payload, encoding: .utf8) ?? ""
 
@@ -344,8 +437,10 @@ class TaskViewModel: ObservableObject {
             operation.setValue(Date(), forKey: "timestamp")
 
             try context.save()
+            print("✅ Queued \(type) operation for task: \(task.text)")
         } catch {
             errorMessage = "Failed to queue operation: \(error.localizedDescription)"
+            print("❌ queueOperation error: \(error)")
         }
     }
 
@@ -356,38 +451,77 @@ class TaskViewModel: ObservableObject {
 
         do {
             let results = try context.fetch(fetchRequest)
+            
+            guard !results.isEmpty else {
+                print("ℹ️ No pending operations to process")
+                return
+            }
+
+            print("📤 Processing \(results.count) pending operation(s)...")
 
             for operation in results {
                 guard
                     let type = operation.value(forKey: "operationType") as? String,
                     let payloadString = operation.value(forKey: "payload") as? String,
                     let payloadData = payloadString.data(using: .utf8)
-                else { continue }
-
-                let decoder = JSONDecoder()
-                let task = try decoder.decode(TaskModel.self, from: payloadData)
-
-                // Execute operation
-                switch type {
-                case "create", "update":
-                    try await saveToSupabase(task: task)
-                case "delete":
-                    try await supabase
-                        .from("tasks")
-                        .delete()
-                        .eq("id", value: task.id.uuidString)
-                        .execute()
-                default:
-                    break
+                else {
+                    print("⚠️ Skipping invalid operation")
+                    context.delete(operation)
+                    continue
                 }
 
-                // Delete processed operation
-                context.delete(operation)
+                do {
+                    let decoder = JSONDecoder()
+                    // Try ISO8601 first, fall back to default if needed
+                    decoder.dateDecodingStrategy = .iso8601
+                    var task: TaskModel
+                    
+                    do {
+                        task = try decoder.decode(TaskModel.self, from: payloadData)
+                    } catch {
+                        // Fallback to default date decoding
+                        decoder.dateDecodingStrategy = .deferredToDate
+                        task = try decoder.decode(TaskModel.self, from: payloadData)
+                    }
+
+                    // Execute operation
+                    switch type {
+                    case "create", "update":
+                        print("📤 Syncing \(type) for task: \(task.text)")
+                        try await saveToSupabase(task: task)
+                    case "delete":
+                        print("📤 Syncing delete for task: \(task.id)")
+                        try await supabase
+                            .from("tasks")
+                            .delete()
+                            .eq("id", value: task.id.uuidString)
+                            .execute()
+                    default:
+                        print("⚠️ Unknown operation type: \(type)")
+                    }
+
+                    // Delete processed operation only if successful
+                    context.delete(operation)
+                    print("✅ Operation processed successfully")
+                } catch {
+                    print("❌ Failed to process operation: \(error.localizedDescription)")
+                    print("   Payload: \(payloadString)")
+                    // Don't delete the operation, we'll try again next time
+                    // But if it's a decoding error, we should delete it as it will never work
+                    if error is DecodingError {
+                        print("⚠️ Decoding error - deleting invalid operation")
+                        context.delete(operation)
+                    } else {
+                        throw error
+                    }
+                }
             }
 
             try context.save()
+            print("✅ All pending operations processed and saved")
         } catch {
             errorMessage = "Failed to process pending operations: \(error.localizedDescription)"
+            print("❌ processPendingOperations error: \(error)")
         }
     }
 }
