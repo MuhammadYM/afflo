@@ -3,7 +3,7 @@ import SwiftUI
 
 struct TaskComponent: View {
     @StateObject private var viewModel: TaskViewModel
-    @State private var isExpanded: Bool = false
+    @Binding var isExpanded: Bool
     @State private var showToast: Bool = false
     @State private var toastMessage: String = ""
     @State private var newTaskText: String = ""
@@ -12,7 +12,8 @@ struct TaskComponent: View {
 
     @Environment(\.colorScheme) var colorScheme
 
-    init(viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
+    init(isExpanded: Binding<Bool>, viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
+        self._isExpanded = isExpanded
         _viewModel = StateObject(wrappedValue: TaskViewModel(viewContext: viewContext))
     }
 
@@ -27,7 +28,8 @@ struct TaskComponent: View {
     }
 
     var body: some View {
-        ZStack(alignment: .top) {
+        // The actual task component
+        ZStack(alignment: .topLeading) {
             VStack(alignment: .leading, spacing: 0) {
                 // Header
                 HStack {
@@ -49,6 +51,12 @@ struct TaskComponent: View {
 
                     Button(
                         action: {
+                            // If we have more than maxVisibleTasks, expand first
+                            if viewModel.tasks.count >= maxVisibleTasks {
+                                withAnimation {
+                                    isExpanded = true
+                                }
+                            }
                             showAddField = true
                             isAddFieldFocused = true
                         },
@@ -85,63 +93,64 @@ struct TaskComponent: View {
                             .font(.anonymousPro(size: 15))
                             .foregroundColor(Color.icon(for: colorScheme))
                     }
-                    .padding(.horizontal, 16)
                     .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
                     .onTapGesture {
                         showAddField = true
                         isAddFieldFocused = true
                     }
                 } else {
-                    ScrollView {
-                        VStack(spacing: 0) {
-                            ForEach(visibleTasks) { task in
-                                TaskRowView(
-                                    task: task,
-                                    onToggle: {
-                                        Task {
-                                            await viewModel.toggleComplete(id: task.id)
-                                        }
-                                    },
-                                    onUpdate: { newText in
-                                        Task {
-                                            await viewModel.updateTask(id: task.id, text: newText)
-                                        }
-                                    },
-                                    onDelete: {
-                                        Task {
-                                            await viewModel.deleteTask(id: task.id)
-                                            showToast(message: "Task deleted")
-                                        }
+                    // Always use a VStack to fit content - no ScrollView needed
+                    VStack(spacing: 0) {
+                        ForEach(visibleTasks) { task in
+                            TaskRowView(
+                                task: task,
+                                onToggle: {
+                                    Task {
+                                        await viewModel.toggleComplete(id: task.id)
                                     }
-                                )
-                            }
-
-                            // Add task field at bottom
-                            if showAddField {
-                                HStack(spacing: 12) {
-                                    Circle()
-                                        .strokeBorder(
-                                            style: StrokeStyle(lineWidth: 1, dash: [2, 2.14])
-                                        )
-                                        .foregroundColor(Color.text(for: colorScheme))
-                                        .frame(width: 12, height: 12)
-
-                                    TextField("Add a task...", text: $newTaskText)
-                                        .focused($isAddFieldFocused)
-                                        .font(.anonymousPro(size: 15))
-                                        .foregroundColor(Color.text(for: colorScheme))
-                                        .submitLabel(.done)
-                                        .onSubmit {
-                                            addTask()
-                                        }
+                                },
+                                onUpdate: { newText in
+                                    Task {
+                                        await viewModel.updateTask(id: task.id, text: newText)
+                                    }
+                                },
+                                onDelete: {
+                                    Task {
+                                        await viewModel.deleteTask(id: task.id)
+                                        showToast(message: "Task deleted")
+                                        // Removed auto-collapse - user controls collapse manually
+                                    }
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
+                            )
+                        }
+
+                        // Add task field at bottom
+                        if showAddField {
+                            HStack(spacing: 12) {
+                                Circle()
+                                    .strokeBorder(
+                                        style: StrokeStyle(lineWidth: 1, dash: [2, 2.14])
+                                    )
+                                    .foregroundColor(Color.text(for: colorScheme))
+                                    .frame(width: 12, height: 12)
+
+                                TextField("Add a task...", text: $newTaskText)
+                                    .focused($isAddFieldFocused)
+                                    .font(.anonymousPro(size: 15))
+                                    .foregroundColor(Color.text(for: colorScheme))
+                                    .submitLabel(.done)
+                                    .onSubmit {
+                                        addTask()
+                                    }
                             }
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
                         }
                     }
-                    .frame(maxHeight: isExpanded ? 400 : CGFloat(maxVisibleTasks * 50))
                 }
+
+
 
                 // Expand/collapse indicator
                 if viewModel.tasks.count > maxVisibleTasks {
@@ -161,7 +170,7 @@ struct TaskComponent: View {
                 }
             }
             .padding(.bottom, 10)
-            .frame(width: 327)
+            .frame(width: 327, alignment: .leading)
             .background(Color.background(for: colorScheme))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
@@ -169,26 +178,15 @@ struct TaskComponent: View {
             )
             .cornerRadius(12)
             .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
-            .onTapGesture {
-                // Tap background to expand/collapse if there are many tasks
-                if viewModel.tasks.count > maxVisibleTasks {
-                    withAnimation {
-                        isExpanded.toggle()
-                    }
-                }
-            }
-
-            // Toast notification
-            if showToast {
-                VStack {
-                    Spacer()
+            .overlay(alignment: .bottom) {
+                // Toast notification
+                if showToast {
                     ToastView(show: $showToast, message: $toastMessage)
-                        .frame(width: 327)
+                        .padding(.bottom, -50)
                 }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .fixedSize(horizontal: false, vertical: true)
+        .frame(width: 327, alignment: .topLeading)
         .task {
             await viewModel.loadTasks()
         }
@@ -210,6 +208,7 @@ struct TaskComponent: View {
             newTaskText = ""
             showAddField = false
             isAddFieldFocused = false
+            // Removed auto-expand logic - we expand when add button is clicked instead
         }
     }
 
