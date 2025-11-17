@@ -1,4 +1,5 @@
 import CoreData
+import CoreData
 import SwiftUI
 
 struct TaskComponent: View {
@@ -58,7 +59,10 @@ struct TaskComponent: View {
                                 }
                             }
                             showAddField = true
-                            isAddFieldFocused = true
+                            // Delay focus to allow the text field to fully initialize
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                isAddFieldFocused = true
+                            }
                         },
                         label: {
                             Image("documents-add-icon")
@@ -97,10 +101,12 @@ struct TaskComponent: View {
                     .padding(.horizontal, 12)
                     .onTapGesture {
                         showAddField = true
-                        isAddFieldFocused = true
+                        // Delay focus to allow the text field to fully initialize
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isAddFieldFocused = true
+                        }
                     }
                 } else {
-                    // Always use a VStack to fit content - no ScrollView needed
                     VStack(spacing: 0) {
                         ForEach(visibleTasks) { task in
                             TaskRowView(
@@ -203,12 +209,13 @@ struct TaskComponent: View {
             return
         }
 
+        let taskText = newTaskText
+        newTaskText = ""
+        showAddField = false
+        isAddFieldFocused = false
+
         Task {
-            await viewModel.addTask(text: newTaskText)
-            newTaskText = ""
-            showAddField = false
-            isAddFieldFocused = false
-            // Removed auto-expand logic - we expand when add button is clicked instead
+            await viewModel.addTask(text: taskText)
         }
     }
 
