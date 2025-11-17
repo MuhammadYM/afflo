@@ -25,11 +25,11 @@ struct ToastView: View {
                     .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                     .padding(.bottom, 16)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                            withAnimation {
-                                show = false
-                            }
+                    .task {
+                        // Use Task with delay instead of DispatchQueue
+                        try? await Task.sleep(nanoseconds: 2_500_000_000) // 2.5 seconds
+                        withAnimation {
+                            show = false
                         }
                     }
             }

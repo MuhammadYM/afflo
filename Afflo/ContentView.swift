@@ -6,18 +6,18 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-//            if authViewModel.session == nil {
-//                // No session -> show auth
-//                AuthView()
-//            } else if !hasCompletedOnboarding {
-//                // Session exists but no onboarding -> show onboarding
-//                OnboardingView(onComplete: {
-//                    hasCompletedOnboarding = true
-//                })
-//            } else {
-                // Session exists and onboarding complete -> show main tabs
+            if authViewModel.session == nil {
+                // No session -> show auth
+                AuthView()
+            } else if !hasCompletedOnboarding {
+                // Session exists but no onboarding -> show onboarding
+                OnboardingView(onComplete: {
+                    hasCompletedOnboarding = true
+                })
+            } else {
+//                 Session exists and onboarding complete -> show main tabs
                 MainTabView()
-//            }
+            }
         }
         .onAppear {
             // Refresh onboarding status on appear

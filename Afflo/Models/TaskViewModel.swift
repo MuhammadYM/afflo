@@ -29,6 +29,7 @@ struct TaskUpsert: Codable {
     let isCompleted: Bool
     let order: Int16
     let userId: String
+    let updatedAt: Date
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -36,6 +37,7 @@ struct TaskUpsert: Codable {
         case isCompleted = "is_completed"
         case order
         case userId = "user_id"
+        case updatedAt = "updated_at"
     }
 }
 
@@ -159,8 +161,13 @@ class TaskViewModel: ObservableObject {
     }
 
     func toggleComplete(id: UUID) async {
-        guard let index = tasks.firstIndex(where: { $0.id == id }) else { return }
+        guard let index = tasks.firstIndex(where: { $0.id == id }) else { 
+            print("❌ Task not found: \(id)")
+            return 
+        }
 
+        print("🔄 Toggling task \(id): \(tasks[index].isCompleted) -> \(!tasks[index].isCompleted)")
+        
         tasks[index].isCompleted.toggle()
         tasks[index].updatedAt = Date()
 
@@ -171,14 +178,19 @@ class TaskViewModel: ObservableObject {
             let userId = try await getUserId()
 
             if networkMonitor.isConnected {
-                try await saveToSupabase(task: tasks[index])
+                let updatedTask = tasks.first(where: { $0.id == id })!
+                try await saveToSupabase(task: updatedTask)
+                print("✅ Task toggled and saved to Supabase")
             } else {
-                await queueOperation(type: "update", taskId: id, task: tasks[index])
+                let updatedTask = tasks.first(where: { $0.id == id })!
+                await queueOperation(type: "update", taskId: id, task: updatedTask)
+                print("✅ Task toggled and queued for sync")
             }
 
             await saveToCoreData(userId: userId)
         } catch {
             errorMessage = error.localizedDescription
+            print("❌ Failed to toggle task: \(error)")
         }
     }
 
@@ -241,7 +253,8 @@ class TaskViewModel: ObservableObject {
             text: task.text,
             isCompleted: task.isCompleted,
             order: task.order,
-            userId: task.userId
+            userId: task.userId,
+            updatedAt: task.updatedAt
         )
 
         try await supabase

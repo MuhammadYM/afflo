@@ -127,7 +127,6 @@ struct TaskComponent: View {
                                     Task {
                                         await viewModel.deleteTask(id: task.id)
                                         showToast(message: "Task deleted")
-                                        // Removed auto-collapse - user controls collapse manually
                                     }
                                 }
                             )
