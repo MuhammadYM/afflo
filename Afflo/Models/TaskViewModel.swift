@@ -47,8 +47,8 @@ class TaskViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    private let supabase = SupabaseService.shared.client
-    private let viewContext: NSManagedObjectContext
+    let supabase = SupabaseService.shared.client
+    let viewContext: NSManagedObjectContext
     private let networkMonitor = NetworkMonitor.shared
     private var cancellables = Set<AnyCancellable>()
     private var retryTask: Task<Void, Never>?
@@ -79,7 +79,8 @@ class TaskViewModel: ObservableObject {
     }
     
     deinit {
-        stopPeriodicRetry()
+        retryTask?.cancel()
+        retryTask = nil
     }
     
     private func startPeriodicRetry() {
@@ -188,7 +189,8 @@ class TaskViewModel: ObservableObject {
                     try await saveToSupabase(task: newTask)
                     print("✅ Task saved to Supabase immediately")
                 } catch {
-                    print("⚠️ Failed to save to Supabase (server may be down), queueing for later: \(error.localizedDescription)")
+                    let message = error.localizedDescription
+                    print("⚠️ Failed to save to Supabase (server may be down), queueing for later: \(message)")
                     // Queue for later if Supabase is unreachable
                     await queueOperation(type: "create", taskId: newTask.id, task: newTask)
                 }
@@ -218,7 +220,8 @@ class TaskViewModel: ObservableObject {
                     try await saveToSupabase(task: tasks[index])
                     print("✅ Task update saved to Supabase immediately")
                 } catch {
-                    print("⚠️ Failed to update in Supabase (server may be down), queueing for later: \(error.localizedDescription)")
+                    let message = error.localizedDescription
+                    print("⚠️ Failed to update in Supabase (server may be down), queueing for later: \(message)")
                     await queueOperation(type: "update", taskId: id, task: tasks[index])
                 }
             } else {
@@ -256,7 +259,8 @@ class TaskViewModel: ObservableObject {
                     try await saveToSupabase(task: updatedTask)
                     print("✅ Task toggled and saved to Supabase")
                 } catch {
-                    print("⚠️ Failed to toggle in Supabase (server may be down), queueing for later: \(error.localizedDescription)")
+                    let message = error.localizedDescription
+                    print("⚠️ Failed to toggle in Supabase (server may be down), queueing for later: \(message)")
                     await queueOperation(type: "update", taskId: id, task: updatedTask)
                 }
             } else {
@@ -289,7 +293,8 @@ class TaskViewModel: ObservableObject {
                         .execute()
                     print("✅ Task deleted from Supabase immediately")
                 } catch {
-                    print("⚠️ Failed to delete from Supabase (server may be down), queueing for later: \(error.localizedDescription)")
+                    let message = error.localizedDescription
+                    print("⚠️ Failed to delete from Supabase (server may be down), queueing for later: \(message)")
                     await queueOperation(type: "delete", taskId: id, task: task)
                 }
             } else {
@@ -322,13 +327,13 @@ class TaskViewModel: ObservableObject {
 
     // MARK: - Private Methods
 
-    private func sortTasks(_ tasks: [TaskModel]) -> [TaskModel] {
+    func sortTasks(_ tasks: [TaskModel]) -> [TaskModel] {
         let incomplete = tasks.filter { !$0.isCompleted }.sorted { $0.order < $1.order }
         let completed = tasks.filter { $0.isCompleted }
         return incomplete + completed
     }
 
-    private func getUserId() async throws -> String {
+    func getUserId() async throws -> String {
         do {
             let session = try await supabase.auth.session
             return session.user.id.uuidString
@@ -339,7 +344,7 @@ class TaskViewModel: ObservableObject {
         }
     }
 
-    private func saveToSupabase(task: TaskModel) async throws {
+    func saveToSupabase(task: TaskModel) async throws {
         let upsert = TaskUpsert(
             id: task.id,
             text: task.text,
@@ -353,175 +358,5 @@ class TaskViewModel: ObservableObject {
             .from("tasks")
             .upsert(upsert)
             .execute()
-    }
-
-    private func saveToCoreData(userId: String) async {
-        let context = viewContext
-
-        // Delete existing tasks for this user
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "TaskItem")
-        fetchRequest.predicate = NSPredicate(format: "userId == %@", userId)
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
-        do {
-            try context.execute(deleteRequest)
-
-            // Save current tasks
-            for task in tasks {
-                let taskItem = NSEntityDescription.insertNewObject(forEntityName: "TaskItem", into: context)
-                taskItem.setValue(task.id, forKey: "id")
-                taskItem.setValue(task.text, forKey: "text")
-                taskItem.setValue(task.isCompleted, forKey: "isCompleted")
-                taskItem.setValue(task.order, forKey: "order")
-                taskItem.setValue(task.createdAt, forKey: "createdAt")
-                taskItem.setValue(task.updatedAt, forKey: "updatedAt")
-                taskItem.setValue(task.userId, forKey: "userId")
-                taskItem.setValue(false, forKey: "needsSync")
-            }
-
-            try context.save()
-        } catch {
-            errorMessage = "Failed to save to Core Data: \(error.localizedDescription)"
-        }
-    }
-
-    private func loadFromCoreData(userId: String) async {
-        let context = viewContext
-        let fetchRequest: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "TaskItem")
-        fetchRequest.predicate = NSPredicate(format: "userId == %@", userId)
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "order", ascending: true)]
-
-        do {
-            let results = try context.fetch(fetchRequest)
-            tasks = results.compactMap { item in
-                guard
-                    let id = item.value(forKey: "id") as? UUID,
-                    let text = item.value(forKey: "text") as? String,
-                    let isCompleted = item.value(forKey: "isCompleted") as? Bool,
-                    let order = item.value(forKey: "order") as? Int16,
-                    let createdAt = item.value(forKey: "createdAt") as? Date,
-                    let updatedAt = item.value(forKey: "updatedAt") as? Date,
-                    let userId = item.value(forKey: "userId") as? String
-                else { return nil }
-
-                return TaskModel(
-                    id: id,
-                    text: text,
-                    isCompleted: isCompleted,
-                    order: order,
-                    createdAt: createdAt,
-                    updatedAt: updatedAt,
-                    userId: userId
-                )
-            }
-            tasks = sortTasks(tasks)
-        } catch {
-            errorMessage = "Failed to load from Core Data: \(error.localizedDescription)"
-        }
-    }
-
-    private func queueOperation(type: String, taskId: UUID, task: TaskModel) async {
-        let context = viewContext
-
-        do {
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
-            let payload = try encoder.encode(task)
-            let payloadString = String(data: payload, encoding: .utf8) ?? ""
-
-            let operation = NSEntityDescription.insertNewObject(forEntityName: "PendingOperation", into: context)
-            operation.setValue(UUID(), forKey: "id")
-            operation.setValue(type, forKey: "operationType")
-            operation.setValue(taskId, forKey: "taskId")
-            operation.setValue(payloadString, forKey: "payload")
-            operation.setValue(Date(), forKey: "timestamp")
-
-            try context.save()
-            print("✅ Queued \(type) operation for task: \(task.text)")
-        } catch {
-            errorMessage = "Failed to queue operation: \(error.localizedDescription)"
-            print("❌ queueOperation error: \(error)")
-        }
-    }
-
-    private func processPendingOperations() async {
-        let context = viewContext
-        let fetchRequest: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "PendingOperation")
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: true)]
-
-        do {
-            let results = try context.fetch(fetchRequest)
-            
-            guard !results.isEmpty else {
-                print("ℹ️ No pending operations to process")
-                return
-            }
-
-            print("📤 Processing \(results.count) pending operation(s)...")
-
-            for operation in results {
-                guard
-                    let type = operation.value(forKey: "operationType") as? String,
-                    let payloadString = operation.value(forKey: "payload") as? String,
-                    let payloadData = payloadString.data(using: .utf8)
-                else {
-                    print("⚠️ Skipping invalid operation")
-                    context.delete(operation)
-                    continue
-                }
-
-                do {
-                    let decoder = JSONDecoder()
-                    // Try ISO8601 first, fall back to default if needed
-                    decoder.dateDecodingStrategy = .iso8601
-                    var task: TaskModel
-                    
-                    do {
-                        task = try decoder.decode(TaskModel.self, from: payloadData)
-                    } catch {
-                        // Fallback to default date decoding
-                        decoder.dateDecodingStrategy = .deferredToDate
-                        task = try decoder.decode(TaskModel.self, from: payloadData)
-                    }
-
-                    // Execute operation
-                    switch type {
-                    case "create", "update":
-                        print("📤 Syncing \(type) for task: \(task.text)")
-                        try await saveToSupabase(task: task)
-                    case "delete":
-                        print("📤 Syncing delete for task: \(task.id)")
-                        try await supabase
-                            .from("tasks")
-                            .delete()
-                            .eq("id", value: task.id.uuidString)
-                            .execute()
-                    default:
-                        print("⚠️ Unknown operation type: \(type)")
-                    }
-
-                    // Delete processed operation only if successful
-                    context.delete(operation)
-                    print("✅ Operation processed successfully")
-                } catch {
-                    print("❌ Failed to process operation: \(error.localizedDescription)")
-                    print("   Payload: \(payloadString)")
-                    // Don't delete the operation, we'll try again next time
-                    // But if it's a decoding error, we should delete it as it will never work
-                    if error is DecodingError {
-                        print("⚠️ Decoding error - deleting invalid operation")
-                        context.delete(operation)
-                    } else {
-                        throw error
-                    }
-                }
-            }
-
-            try context.save()
-            print("✅ All pending operations processed and saved")
-        } catch {
-            errorMessage = "Failed to process pending operations: \(error.localizedDescription)"
-            print("❌ processPendingOperations error: \(error)")
-        }
     }
 }
