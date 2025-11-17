@@ -61,10 +61,7 @@ class OnboardingViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            let session = try await supabase.auth.session
-            guard let userId = session.user.id.uuidString as String? else {
-                throw NSError(domain: "No authenticated user", code: 401)
-            }
+            let userId = try await getUserId()
 
             let profileData = UserProfileUpsert(
                 id: userId,
@@ -87,5 +84,35 @@ class OnboardingViewModel: ObservableObject {
         }
 
         isSubmitting = false
+    }
+
+    // MARK: - Helper Methods
+
+    private func getUserId() async throws -> String {
+        // Check if using mock auth
+        if readConfigFlag("USE_LOCAL") {
+            print("🧪 OnboardingViewModel: Using mock user ID")
+            return "00000000-0000-0000-0000-000000000000"
+        }
+
+        // Normal auth flow
+        do {
+            let session = try await supabase.auth.session
+            guard let userId = session.user.id.uuidString as String? else {
+                throw NSError(domain: "No authenticated user", code: 401)
+            }
+            return userId
+        } catch {
+            throw NSError(domain: "Auth session missing", code: 401)
+        }
+    }
+
+    private func readConfigFlag(_ key: String) -> Bool {
+        guard let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
+              let config = NSDictionary(contentsOfFile: path) as? [String: Any],
+              let value = config[key] as? Bool else {
+            return false
+        }
+        return value
     }
 }
