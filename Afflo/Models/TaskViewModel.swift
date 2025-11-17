@@ -105,6 +105,11 @@ class TaskViewModel: ObservableObject {
     private func retryPendingOperations() async {
         guard networkMonitor.isConnected else { return }
         
+        // Check if PendingOperation entity exists
+        guard NSEntityDescription.entity(forEntityName: "PendingOperation", in: viewContext) != nil else {
+            return // Silently skip if entity doesn't exist
+        }
+        
         // Check if there are pending operations
         let context = viewContext
         let fetchRequest: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "PendingOperation")
@@ -358,5 +363,231 @@ class TaskViewModel: ObservableObject {
             .from("tasks")
             .upsert(upsert)
             .execute()
+    }
+    
+    // MARK: - Core Data Methods
+    
+    private func loadFromCoreData(userId: String) async {
+        // Check if TaskItem entity exists
+        guard NSEntityDescription.entity(forEntityName: "TaskItem", in: viewContext) != nil else {
+            print("⚠️ TaskItem entity not found in Core Data model, skipping cache")
+            return
+        }
+
+        let context = viewContext
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "TaskItem")
+        fetchRequest.predicate = NSPredicate(format: "userId == %@", userId)
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "order", ascending: true)]
+        
+        do {
+            let results = try context.fetch(fetchRequest)
+            let loadedTasks = results.compactMap { object -> TaskModel? in
+                guard
+                    let id = object.value(forKey: "id") as? UUID,
+                    let text = object.value(forKey: "text") as? String,
+                    let isCompleted = object.value(forKey: "isCompleted") as? Bool,
+                    let order = object.value(forKey: "order") as? Int16,
+                    let createdAt = object.value(forKey: "createdAt") as? Date,
+                    let updatedAt = object.value(forKey: "updatedAt") as? Date,
+                    let userId = object.value(forKey: "userId") as? String
+                else {
+                    return nil
+                }
+                
+                return TaskModel(
+                    id: id,
+                    text: text,
+                    isCompleted: isCompleted,
+                    order: order,
+                    createdAt: createdAt,
+                    updatedAt: updatedAt,
+                    userId: userId
+                )
+            }
+            
+            tasks = sortTasks(loadedTasks)
+            print("✅ Loaded \(loadedTasks.count) tasks from Core Data")
+        } catch {
+            print("❌ Failed to load from Core Data: \(error)")
+        }
+    }
+    
+    private func saveToCoreData(userId: String) async {
+        // Check if TaskItem entity exists
+        guard let entity = NSEntityDescription.entity(forEntityName: "TaskItem", in: viewContext) else {
+            print("⚠️ TaskItem entity not found in Core Data model, skipping cache")
+            return
+        }
+
+        let context = viewContext
+
+        // Clear existing tasks for this user
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "TaskItem")
+        fetchRequest.predicate = NSPredicate(format: "userId == %@", userId)
+        
+        do {
+            let existingTasks = try context.fetch(fetchRequest)
+            for task in existingTasks {
+                context.delete(task)
+            }
+             
+            // Save new tasks
+            for task in tasks {
+                let object = NSManagedObject(entity: entity, insertInto: context)
+                
+                object.setValue(task.id, forKey: "id")
+                object.setValue(task.text, forKey: "text")
+                object.setValue(task.isCompleted, forKey: "isCompleted")
+                object.setValue(task.order, forKey: "order")
+                object.setValue(task.createdAt, forKey: "createdAt")
+                object.setValue(task.updatedAt, forKey: "updatedAt")
+                object.setValue(task.userId, forKey: "userId")
+            }
+            
+            try context.save()
+            print("✅ Saved \(tasks.count) tasks to Core Data")
+        } catch {
+            print("❌ Failed to save to Core Data: \(error)")
+        }
+    }
+    
+    // MARK: - Pending Operations Queue
+    
+    private func queueOperation(type: String, taskId: UUID, task: TaskModel) async {
+        // Check if PendingOperation entity exists
+        guard let entity = NSEntityDescription.entity(forEntityName: "PendingOperation", in: viewContext) else {
+            print("⚠️ PendingOperation entity not found in Core Data model, operation will not be queued")
+            return
+        }
+        
+        // Verify the entity has all required attributes
+        let requiredAttributes = ["taskId", "operationType", "timestamp", "payload"]
+        let entityAttributes = entity.attributesByName.keys
+        let missingAttributes = requiredAttributes.filter { !entityAttributes.contains($0) }
+
+        if !missingAttributes.isEmpty {
+            print("⚠️ PendingOperation entity is missing required attributes: \(missingAttributes.joined(separator: ", "))")
+            print("⚠️ Cannot queue operation. Please add these attributes to your Core Data model:")
+            print("   - taskId: UUID")
+            print("   - operationType: String")
+            print("   - timestamp: Date")
+            print("   - payload: String")
+            return
+        }
+        
+        let context = viewContext
+        
+        do {
+            // Check if operation already exists for this task
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "PendingOperation")
+            fetchRequest.predicate = NSPredicate(format: "taskId == %@", taskId as CVarArg)
+            
+            let existingOps = try context.fetch(fetchRequest)
+            
+            // If there's an existing operation, update it instead of creating a new one
+            let operation: NSManagedObject
+            if let existing = existingOps.first {
+                operation = existing
+                print("📝 Updating existing pending operation for task \(taskId)")
+            } else {
+                operation = NSManagedObject(entity: entity, insertInto: context)
+                operation.setValue(UUID(), forKey: "id")
+                print("📝 Creating new pending operation for task \(taskId)")
+            }
+
+            operation.setValue(taskId, forKey: "taskId")
+            operation.setValue(type, forKey: "operationType")
+            operation.setValue(Date(), forKey: "timestamp")
+
+            // Store task data as JSON (Base64 string for String type)
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            let taskData = try encoder.encode(task)
+            let payload = taskData.base64EncodedString()
+            operation.setValue(payload, forKey: "payload")
+            
+            try context.save()
+            print("✅ Queued \(type) operation for task \(taskId)")
+        } catch {
+            print("❌ Failed to queue operation: \(error)")
+        }
+    }
+    
+    private func processPendingOperations() async {
+        guard networkMonitor.isConnected else {
+            print("⚠️ Cannot process pending operations: offline")
+            return
+        }
+        
+        // Check if PendingOperation entity exists
+        guard NSEntityDescription.entity(forEntityName: "PendingOperation", in: viewContext) != nil else {
+            print("⚠️ PendingOperation entity not found in Core Data model, skipping")
+            return
+        }
+        
+        let context = viewContext
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "PendingOperation")
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: true)]
+        
+        do {
+            let operations = try context.fetch(fetchRequest)
+            
+            guard !operations.isEmpty else {
+                print("ℹ️ No pending operations to process")
+                return
+            }
+            
+            print("🔄 Processing \(operations.count) pending operation(s)...")
+            
+            for operation in operations {
+                guard
+                    let type = operation.value(forKey: "operationType") as? String,
+                    let taskId = operation.value(forKey: "taskId") as? UUID,
+                    let payload = operation.value(forKey: "payload") as? String,
+                    let taskData = Data(base64Encoded: payload)
+                else {
+                    print("⚠️ Invalid operation data, skipping")
+                    context.delete(operation)
+                    continue
+                }
+                
+                do {
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .iso8601
+                    let task = try decoder.decode(TaskModel.self, from: taskData)
+                    
+                    switch type {
+                    case "create", "update":
+                        try await saveToSupabase(task: task)
+                        print("✅ Synced \(type) for task \(taskId)")
+                        
+                    case "delete":
+                        try await supabase
+                            .from("tasks")
+                            .delete()
+                            .eq("id", value: taskId.uuidString)
+                            .execute()
+                        print("✅ Synced delete for task \(taskId)")
+                        
+                    default:
+                        print("⚠️ Unknown operation type: \(type)")
+                    }
+                    
+                    // Remove successful operation
+                    context.delete(operation)
+                    
+                } catch {
+                    print("❌ Failed to process \(type) operation for task \(taskId): \(error)")
+                    // Leave operation in queue to retry later
+                }
+            }
+            
+            // Save context to remove processed operations
+            try context.save()
+            print("✅ Finished processing pending operations")
+            
+        } catch {
+            print("❌ Failed to process pending operations: \(error)")
+        }
     }
 }
