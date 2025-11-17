@@ -49,7 +49,7 @@ class TaskViewModel: ObservableObject {
 
     let supabase = SupabaseService.shared.client
     let viewContext: NSManagedObjectContext
-    private let networkMonitor = NetworkMonitor.shared
+    let networkMonitor = NetworkMonitor.shared
     private var cancellables = Set<AnyCancellable>()
     private var retryTask: Task<Void, Never>?
 
