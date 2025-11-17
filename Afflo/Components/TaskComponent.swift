@@ -1,5 +1,4 @@
 import CoreData
-import CoreData
 import SwiftUI
 
 struct TaskComponent: View {
@@ -13,7 +12,10 @@ struct TaskComponent: View {
 
     @Environment(\.colorScheme) var colorScheme
 
-    init(isExpanded: Binding<Bool>, viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
+    init(
+        isExpanded: Binding<Bool>,
+        viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext
+    ) {
         self._isExpanded = isExpanded
         _viewModel = StateObject(wrappedValue: TaskViewModel(viewContext: viewContext))
     }
@@ -155,8 +157,6 @@ struct TaskComponent: View {
                         }
                     }
                 }
-
-
 
                 // Expand/collapse indicator
                 if viewModel.tasks.count > maxVisibleTasks {
