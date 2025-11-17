@@ -17,12 +17,12 @@ struct PersistenceController {
         
         // Create sample tasks for preview
         if let taskEntity = NSEntityDescription.entity(forEntityName: "Task", in: viewContext) {
-            for i in 0..<5 {
+            for index in 0..<5 {
                 let task = NSManagedObject(entity: taskEntity, insertInto: viewContext)
                 task.setValue(UUID(), forKey: "id")
-                task.setValue("Sample Task \(i + 1)", forKey: "text")
+                task.setValue("Sample Task \(index + 1)", forKey: "text")
                 task.setValue(false, forKey: "isCompleted")
-                task.setValue(Int16(i), forKey: "order")
+                task.setValue(Int16(index), forKey: "order")
                 task.setValue(Date(), forKey: "createdAt")
                 task.setValue(Date(), forKey: "updatedAt")
                 task.setValue("00000000-0000-0000-0000-000000000000", forKey: "userId")
