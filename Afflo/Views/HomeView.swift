@@ -4,6 +4,7 @@ struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
     @StateObject private var authViewModel = AuthViewModel()
     @State private var isTaskComponentExpanded = false
+    @State private var isMomentumExpanded = false
 
     var body: some View {
         ZStack {
@@ -31,7 +32,14 @@ struct HomeView: View {
                     .padding(.top, 20)
                     .padding(.leading, 28)
                     .padding(.trailing, 28)
-                    .zIndex(1) // Ensure TaskComponent is above the overlay
+                    .zIndex(2) // Ensure TaskComponent is above the overlay
+
+                MomentumTrendCard(isExpanded: $isMomentumExpanded)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 36)
+                    .padding(.leading, 28)
+                    .padding(.trailing, 28)
+                    .zIndex(1) // Below TaskComponent but above overlay
 
                 Spacer()
 
@@ -57,12 +65,13 @@ struct HomeView: View {
             .zIndex(1) // VStack should be above overlay
             
             // Full screen tap-to-collapse overlay
-            if isTaskComponentExpanded {
+            if isTaskComponentExpanded || isMomentumExpanded {
                 Color.black.opacity(0.001)
                     .ignoresSafeArea()
                     .onTapGesture {
                         withAnimation {
                             isTaskComponentExpanded = false
+                            isMomentumExpanded = false
                         }
                     }
                     .zIndex(0) // Overlay behind the VStack
