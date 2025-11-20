@@ -7,7 +7,7 @@ struct MomentumLineGraph: View {
     let isExpanded: Bool
 
     private var graphHeight: CGFloat {
-        isExpanded ? 200 : 120
+        120
     }
 
     private var minValue: Double {
@@ -131,19 +131,9 @@ struct MomentumLineGraph: View {
 
     private func pointPosition(for index: Int, in size: CGSize) -> CGPoint {
         let value = dataPoints[index].value
-        let valueRange = maxValue - minValue
 
-        // When all values are the same, use absolute positioning (0-100 scale)
-        let normalizedValue: Double
-        if valueRange > 0 {
-            normalizedValue = (value - minValue) / valueRange
-        } else if maxValue > 0 {
-            // All values same and non-zero, show at their proportional height (0-100 scale)
-            normalizedValue = value / 100.0
-        } else {
-            // All values are 0, show at bottom
-            normalizedValue = 0.0
-        }
+        // Always use fixed 0-100 scale to prevent stretching
+        let normalizedValue = value / 100.0
 
         // Align x-position with centered labels (each label is centered in equal-width sections)
         let xPosition = size.width * (CGFloat(index) + 0.5) / CGFloat(dataPoints.count)
