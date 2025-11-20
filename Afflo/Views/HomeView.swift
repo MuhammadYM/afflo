@@ -36,7 +36,7 @@ struct HomeView: View {
 
                 MomentumTrendCard(isExpanded: $isMomentumExpanded)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 36)
+                    .padding(.top, 20)
                     .padding(.leading, 28)
                     .padding(.trailing, 28)
                     .zIndex(1) // Below TaskComponent but above overlay
