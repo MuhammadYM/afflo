@@ -61,51 +61,165 @@ class MomentumViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
 
-        // For now, use mock data
-        // TODO: Replace with real calculation from tasks, focus, journal data
-        await Task { @MainActor in
-            self.momentumData = generateMockData()
+        do {
+            if networkMonitor.isConnected {
+                // Try to calculate and fetch from Supabase
+                await calculateAndStoreMomentum()
+                if let data = try await fetchFromSupabase() {
+                    self.momentumData = convertToMomentumData(data)
+                } else {
+                    // No data yet, use mock data
+                    self.momentumData = generateMockData()
+                }
+            } else {
+                // Offline - use mock data for now
+                // TODO: Load from Core Data cache
+                self.momentumData = generateMockData()
+            }
             self.isLoading = false
-        }.value
+        } catch {
+            self.errorMessage = error.localizedDescription
+            self.isLoading = false
+            // Fallback to mock data on error
+            self.momentumData = generateMockData()
+        }
     }
 
-    // MARK: - Calculate Momentum (Stub for Future)
-    /*
-    func calculateMomentum() async {
-        // TODO: Implement calculation logic
-        // 1. Fetch completed tasks from TaskViewModel
-        // 2. Fetch focus session data
-        // 3. Fetch journal entries
-        // 4. Calculate weighted score based on:
-        //    - Task completion rate
-        //    - Focus time
-        //    - Journal consistency
-        //    - Streak bonuses
-        // 5. Calculate delta from previous week
-        // 6. Generate weekly breakdown
-        // 7. Store in Supabase + Core Data
-    }
-    */
+    // MARK: - Calculate Momentum
+    func calculateAndStoreMomentum() async {
+        do {
+            // 1. Fetch tasks from past 7 days
+            let calendar = Calendar.current
+            let today = Date()
+            let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today) ?? today
 
-    // MARK: - Supabase Integration (Ready for Future)
-    /*
+            let userId = try await getUserId()
+
+            let tasks: [TaskModel] = try await supabase
+                .from("tasks")
+                .select()
+                .eq("user_id", value: userId)
+                .gte("created_at", value: sevenDaysAgo.ISO8601Format())
+                .execute()
+                .value
+
+            // 2. Calculate daily stats for past 7 days
+            var weeklyData: [WeeklyDataPoint] = []
+            let daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+            for i in 0..<7 {
+                let date = calendar.date(byAdding: .day, value: i - 6, to: today) ?? today
+                let dayStart = calendar.startOfDay(for: date)
+                let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? date
+
+                let dayTasks = tasks.filter { task in
+                    task.createdAt >= dayStart && task.createdAt < dayEnd
+                }
+
+                let completedCount = dayTasks.filter { $0.isCompleted }.count
+                let totalCount = dayTasks.count
+                let completionRate = totalCount > 0 ? Double(completedCount) / Double(totalCount) : 0.0
+                let score = completionRate * 100
+
+                weeklyData.append(WeeklyDataPoint(
+                    day: daysOfWeek[i],
+                    value: score,
+                    timestamp: date
+                ))
+            }
+
+            // 3. Calculate overall score (average of week)
+            let avgScore = weeklyData.map { $0.value }.reduce(0, +) / 7.0
+            let score = Int(avgScore)
+
+            // 4. Calculate breakdown
+            let totalTasks = tasks.count
+            let completedTasks = tasks.filter { $0.isCompleted }.count
+            let taskCompletionRate = totalTasks > 0 ? Double(completedTasks) / Double(totalTasks) : 0.0
+
+            let breakdown = BreakdownData(
+                sessions: 0.0, // TODO: Calculate from sessions table when available
+                focus: 0.0,    // TODO: Calculate from focus data when available
+                journal: 0.0,  // TODO: Calculate from journal entries when available
+                tasks: taskCompletionRate
+            )
+
+            // 5. Calculate delta (compare to previous week)
+            // For now, use simple placeholder
+            let delta = "+\(String(format: "%.1f", taskCompletionRate * 10))hrs"
+
+            // 6. Store in Supabase
+            let momentumUpsert = MomentumModelUpsert(
+                userId: userId,
+                score: score,
+                delta: delta,
+                weeklyData: weeklyData,
+                breakdown: breakdown
+            )
+
+            try await saveToSupabase(momentumUpsert)
+
+        } catch {
+            print("Error calculating momentum: \(error)")
+        }
+    }
+
+    // MARK: - Supabase Integration
     func fetchFromSupabase() async throws -> MomentumModel? {
-        let userId = supabase.auth.currentUser?.id ?? ""
-        let response = try await supabase
+        let userId = try await getUserId()
+
+        let response: [MomentumModel] = try await supabase
             .from("momentum_data")
             .select()
             .eq("user_id", value: userId)
             .order("created_at", ascending: false)
             .limit(1)
             .execute()
-        // Parse and return
+            .value
+
+        return response.first
     }
 
     func saveToSupabase(_ data: MomentumModelUpsert) async throws {
         try await supabase
             .from("momentum_data")
-            .upsert(data)
+            .insert(data)
             .execute()
     }
-    */
+
+    // MARK: - Conversion Helper
+    func convertToMomentumData(_ model: MomentumModel) -> MomentumData {
+        let dataPoints = model.weeklyData.map { point in
+            MomentumDataPoint(
+                day: point.day,
+                value: point.value,
+                date: point.timestamp
+            )
+        }
+
+        let breakdown = MomentumBreakdown(
+            sessions: model.breakdown.sessions,
+            focus: model.breakdown.focus,
+            journal: model.breakdown.journal,
+            tasks: model.breakdown.tasks
+        )
+
+        return MomentumData(
+            score: model.score,
+            deltaText: model.delta,
+            weeklyPoints: dataPoints,
+            breakdown: breakdown
+        )
+    }
+
+    // MARK: - Helper Methods
+    func getUserId() async throws -> String {
+        do {
+            let session = try await supabase.auth.session
+            return session.user.id.uuidString
+        } catch {
+            print("⚠️ No auth session, using dev user ID")
+            throw error
+        }
+    }
 }
