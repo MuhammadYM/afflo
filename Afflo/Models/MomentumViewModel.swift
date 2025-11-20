@@ -219,7 +219,7 @@ class MomentumViewModel: ObservableObject {
             return session.user.id.uuidString
         } catch {
             print("⚠️ No auth session, using dev user ID")
-            throw error
+            return "00000000-0000-0000-0000-000000000000"
         }
     }
 }
