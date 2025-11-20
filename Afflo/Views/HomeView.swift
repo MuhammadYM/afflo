@@ -83,7 +83,7 @@ struct HomeView: View {
                         }
                     }
                 }
-                .onChange(of: isMomentumExpanded) { oldValue, newValue in
+                .onChange(of: isMomentumExpanded) { _, newValue in
                     if newValue {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             withAnimation(.easeInOut(duration: 0.3)) {

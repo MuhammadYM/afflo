@@ -1,5 +1,5 @@
-import SwiftUI
 import CoreData
+import SwiftUI
 
 struct MomentumTrendCard: View {
     @Environment(\.colorScheme) var colorScheme

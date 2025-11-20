@@ -25,10 +25,10 @@ struct MomentumLineGraph: View {
                 ZStack {
                     // Horizontal gridlines
                     ForEach(0..<3, id: \.self) { index in
-                        let y = geometry.size.height * CGFloat(index) / 2
+                        let yPosition = geometry.size.height * CGFloat(index) / 2
                         Path { path in
-                            path.move(to: CGPoint(x: 0, y: y))
-                            path.addLine(to: CGPoint(x: geometry.size.width, y: y))
+                            path.move(to: CGPoint(x: 0, y: yPosition))
+                            path.addLine(to: CGPoint(x: geometry.size.width, y: yPosition))
                         }
                         .stroke(
                             colorScheme == .light ? Color.lightGridLine : Color.darkGridLine,
@@ -51,7 +51,7 @@ struct MomentumLineGraph: View {
                         .stroke(Color.blob, lineWidth: 2.5)
 
                     // Data point markers
-                    ForEach(Array(dataPoints.enumerated()), id: \.element.id) { index, point in
+                    ForEach(Array(dataPoints.enumerated()), id: \.element.id) { index, _ in
                         let position = pointPosition(for: index, in: geometry.size)
                         Circle()
                             .fill(Color.blob)
@@ -81,7 +81,7 @@ struct MomentumLineGraph: View {
 
         guard dataPoints.count > 1 else { return path }
 
-        let points = dataPoints.enumerated().map { index, _ in
+        let points = dataPoints.indices.map { index in
             pointPosition(for: index, in: size)
         }
 
@@ -92,9 +92,9 @@ struct MomentumLineGraph: View {
         if points.count == 2 {
             path.addLine(to: points[1])
         } else {
-            for i in 0..<points.count - 1 {
-                let current = points[i]
-                let next = points[i + 1]
+            for idx in 0..<points.count - 1 {
+                let current = points[idx]
+                let next = points[idx + 1]
 
                 // Calculate control points for smooth curve
                 let controlPoint1 = CGPoint(
@@ -141,10 +141,10 @@ struct MomentumLineGraph: View {
             normalizedValue = 0.0
         }
 
-        let x = size.width * CGFloat(index) / CGFloat(max(dataPoints.count - 1, 1))
-        let y = size.height * (1 - normalizedValue) // Invert Y (0 at top, height at bottom)
+        let xPosition = size.width * CGFloat(index) / CGFloat(max(dataPoints.count - 1, 1))
+        let yPosition = size.height * (1 - normalizedValue) // Invert Y (0 at top, height at bottom)
 
-        return CGPoint(x: x, y: y)
+        return CGPoint(x: xPosition, y: yPosition)
     }
 }
 

@@ -29,13 +29,6 @@ struct MomentumData {
     let deltaText: String
     let weeklyPoints: [MomentumDataPoint]
     let breakdown: MomentumBreakdown
-
-    init(score: Int, deltaText: String, weeklyPoints: [MomentumDataPoint], breakdown: MomentumBreakdown) {
-        self.score = score
-        self.deltaText = deltaText
-        self.weeklyPoints = weeklyPoints
-        self.breakdown = breakdown
-    }
 }
 
 // MARK: - Supabase Model

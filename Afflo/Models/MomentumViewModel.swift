@@ -88,67 +88,13 @@ class MomentumViewModel: ObservableObject {
     // MARK: - Calculate Momentum
     func calculateAndStoreMomentum() async {
         do {
-            // 1. Fetch tasks from past 7 days
-            let calendar = Calendar.current
-            let today = Date()
-            let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today) ?? today
-
             let userId = try await getUserId()
+            let tasks = try await fetchRecentTasks(userId: userId)
+            let weeklyData = calculateWeeklyData(from: tasks)
+            let score = Int(weeklyData.map { $0.value }.reduce(0, +) / 7.0)
+            let breakdown = calculateBreakdown(from: tasks)
+            let delta = "+\(String(format: "%.1f", breakdown.tasks * 10))hrs"
 
-            let tasks: [TaskModel] = try await supabase
-                .from("tasks")
-                .select()
-                .eq("user_id", value: userId)
-                .gte("created_at", value: sevenDaysAgo.ISO8601Format())
-                .execute()
-                .value
-
-            // 2. Calculate daily stats for past 7 days
-            var weeklyData: [WeeklyDataPoint] = []
-            let daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-
-            for i in 0..<7 {
-                let date = calendar.date(byAdding: .day, value: i - 6, to: today) ?? today
-                let dayStart = calendar.startOfDay(for: date)
-                let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? date
-
-                let dayTasks = tasks.filter { task in
-                    task.createdAt >= dayStart && task.createdAt < dayEnd
-                }
-
-                let completedCount = dayTasks.filter { $0.isCompleted }.count
-                let totalCount = dayTasks.count
-                let completionRate = totalCount > 0 ? Double(completedCount) / Double(totalCount) : 0.0
-                let score = completionRate * 100
-
-                weeklyData.append(WeeklyDataPoint(
-                    day: daysOfWeek[i],
-                    value: score,
-                    timestamp: date
-                ))
-            }
-
-            // 3. Calculate overall score (average of week)
-            let avgScore = weeklyData.map { $0.value }.reduce(0, +) / 7.0
-            let score = Int(avgScore)
-
-            // 4. Calculate breakdown
-            let totalTasks = tasks.count
-            let completedTasks = tasks.filter { $0.isCompleted }.count
-            let taskCompletionRate = totalTasks > 0 ? Double(completedTasks) / Double(totalTasks) : 0.0
-
-            let breakdown = BreakdownData(
-                sessions: 0.0, // TODO: Calculate from sessions table when available
-                focus: 0.0,    // TODO: Calculate from focus data when available
-                journal: 0.0,  // TODO: Calculate from journal entries when available
-                tasks: taskCompletionRate
-            )
-
-            // 5. Calculate delta (compare to previous week)
-            // For now, use simple placeholder
-            let delta = "+\(String(format: "%.1f", taskCompletionRate * 10))hrs"
-
-            // 6. Store in Supabase
             let momentumUpsert = MomentumModelUpsert(
                 userId: userId,
                 score: score,
@@ -158,10 +104,66 @@ class MomentumViewModel: ObservableObject {
             )
 
             try await saveToSupabase(momentumUpsert)
-
         } catch {
             print("Error calculating momentum: \(error)")
         }
+    }
+
+    private func fetchRecentTasks(userId: String) async throws -> [TaskModel] {
+        let calendar = Calendar.current
+        let today = Date()
+        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today) ?? today
+
+        return try await supabase
+            .from("tasks")
+            .select()
+            .eq("user_id", value: userId)
+            .gte("created_at", value: sevenDaysAgo.ISO8601Format())
+            .execute()
+            .value
+    }
+
+    private func calculateWeeklyData(from tasks: [TaskModel]) -> [WeeklyDataPoint] {
+        let calendar = Calendar.current
+        let today = Date()
+        let daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        var weeklyData: [WeeklyDataPoint] = []
+
+        for dayIndex in 0..<7 {
+            let date = calendar.date(byAdding: .day, value: dayIndex - 6, to: today) ?? today
+            let dayStart = calendar.startOfDay(for: date)
+            let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? date
+
+            let dayTasks = tasks.filter { task in
+                task.createdAt >= dayStart && task.createdAt < dayEnd
+            }
+
+            let completedCount = dayTasks.filter { $0.isCompleted }.count
+            let totalCount = dayTasks.count
+            let completionRate = totalCount > 0 ? Double(completedCount) / Double(totalCount) : 0.0
+            let score = completionRate * 100
+
+            weeklyData.append(WeeklyDataPoint(
+                day: daysOfWeek[dayIndex],
+                value: score,
+                timestamp: date
+            ))
+        }
+
+        return weeklyData
+    }
+
+    private func calculateBreakdown(from tasks: [TaskModel]) -> BreakdownData {
+        let totalTasks = tasks.count
+        let completedTasks = tasks.filter { $0.isCompleted }.count
+        let taskCompletionRate = totalTasks > 0 ? Double(completedTasks) / Double(totalTasks) : 0.0
+
+        return BreakdownData(
+            sessions: 0.0, // TODO: Calculate from sessions table when available
+            focus: 0.0,    // TODO: Calculate from focus data when available
+            journal: 0.0,  // TODO: Calculate from journal entries when available
+            tasks: taskCompletionRate
+        )
     }
 
     // MARK: - Supabase Integration
