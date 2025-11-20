@@ -128,7 +128,18 @@ struct MomentumLineGraph: View {
     private func pointPosition(for index: Int, in size: CGSize) -> CGPoint {
         let value = dataPoints[index].value
         let valueRange = maxValue - minValue
-        let normalizedValue = valueRange > 0 ? (value - minValue) / valueRange : 0.5
+
+        // When all values are the same, use absolute positioning (0-100 scale)
+        let normalizedValue: Double
+        if valueRange > 0 {
+            normalizedValue = (value - minValue) / valueRange
+        } else if maxValue > 0 {
+            // All values same and non-zero, show at their proportional height (0-100 scale)
+            normalizedValue = value / 100.0
+        } else {
+            // All values are 0, show at bottom
+            normalizedValue = 0.0
+        }
 
         let x = size.width * CGFloat(index) / CGFloat(max(dataPoints.count - 1, 1))
         let y = size.height * (1 - normalizedValue) // Invert Y (0 at top, height at bottom)

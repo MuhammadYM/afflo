@@ -13,56 +13,59 @@ struct HomeView: View {
 
             BackgroundGridOverlay()
 
-            VStack(alignment: .leading, spacing: 0) {
-                DateScrollView()
-                    .padding(.top, 60)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    DateScrollView()
+                        .padding(.top, 60)
 
-                HStack(spacing: 20) {
-                    VoiceJournalComponent()
+                    HStack(spacing: 20) {
+                        VoiceJournalComponent()
 
-                    FocusMetric()
-                }
-                .frame(height: 100)
-                .padding(.top, 36)
-                .padding(.leading, 28)
-                .padding(.trailing, 28)
-
-                TaskComponent(isExpanded: $isTaskComponentExpanded)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 20)
-                    .padding(.leading, 28)
-                    .padding(.trailing, 28)
-                    .zIndex(2) // Ensure TaskComponent is above the overlay
-
-                MomentumTrendCard(isExpanded: $isMomentumExpanded)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 20)
-                    .padding(.leading, 28)
-                    .padding(.trailing, 28)
-                    .zIndex(1) // Below TaskComponent but above overlay
-
-                Spacer()
-
-                #if DEBUG
-                Button(
-                    action: {
-                        Task {
-                            await authViewModel.signOut()
-                        }
-                    },
-                    label: {
-                        Text("Reset App (Debug Only)")
-                            .font(.anonymousPro(size: 14))
-                            .foregroundColor(.red)
-                            .padding()
-                            .background(Color.red.opacity(0.1))
-                            .cornerRadius(8)
+                        FocusMetric()
                     }
-                )
-                .padding(.bottom, 40)
-                #endif
+                    .frame(height: 100)
+                    .padding(.top, 36)
+                    .padding(.leading, 28)
+                    .padding(.trailing, 28)
+
+                    TaskComponent(isExpanded: $isTaskComponentExpanded)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 20)
+                        .padding(.leading, 28)
+                        .padding(.trailing, 28)
+                        .zIndex(2) // Ensure TaskComponent is above the overlay
+
+                    MomentumTrendCard(isExpanded: $isMomentumExpanded)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 20)
+                        .padding(.leading, 28)
+                        .padding(.trailing, 28)
+                        .zIndex(1) // Below TaskComponent but above overlay
+
+                    Spacer()
+                        .frame(height: 40)
+
+                    #if DEBUG
+                    Button(
+                        action: {
+                            Task {
+                                await authViewModel.signOut()
+                            }
+                        },
+                        label: {
+                            Text("Reset App (Debug Only)")
+                                .font(.anonymousPro(size: 14))
+                                .foregroundColor(.red)
+                                .padding()
+                                .background(Color.red.opacity(0.1))
+                                .cornerRadius(8)
+                        }
+                    )
+                    .padding(.bottom, 40)
+                    #endif
+                }
             }
-            .zIndex(1) // VStack should be above overlay
+            .zIndex(1) // ScrollView should be above overlay
             
             // Full screen tap-to-collapse overlay
             if isTaskComponentExpanded || isMomentumExpanded {
