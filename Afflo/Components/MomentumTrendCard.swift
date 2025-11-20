@@ -8,7 +8,7 @@ struct MomentumTrendCard: View {
 
     init(
         isExpanded: Binding<Bool>,
-        viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext
+        viewContext: NSManagedObjectContext? = nil
     ) {
         self._isExpanded = isExpanded
         _viewModel = StateObject(wrappedValue: MomentumViewModel(viewContext: viewContext))

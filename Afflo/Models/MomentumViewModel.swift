@@ -1,6 +1,7 @@
-import Foundation
-import SwiftUI
+import Combine
 import CoreData
+import Foundation
+import Supabase
 
 @MainActor
 class MomentumViewModel: ObservableObject {
@@ -13,8 +14,8 @@ class MomentumViewModel: ObservableObject {
     private let viewContext: NSManagedObjectContext
     private let networkMonitor = NetworkMonitor.shared
 
-    init(viewContext: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
-        self.viewContext = viewContext
+    init(viewContext: NSManagedObjectContext? = nil) {
+        self.viewContext = viewContext ?? PersistenceController.shared.container.viewContext
     }
 
     // MARK: - Mock Data Generator
