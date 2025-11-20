@@ -117,9 +117,13 @@ struct MomentumLineGraph: View {
         var path = linePath(in: size)
 
         // Close the path to create filled area
-        let lastX = size.width * CGFloat(dataPoints.count - 1) / CGFloat(max(dataPoints.count - 1, 1))
+        // Use same positioning as pointPosition for consistency
+        let lastIndex = dataPoints.count - 1
+        let lastX = size.width * (CGFloat(lastIndex) + 0.5) / CGFloat(dataPoints.count)
+        let firstX = size.width * 0.5 / CGFloat(dataPoints.count)
+
         path.addLine(to: CGPoint(x: lastX, y: size.height))
-        path.addLine(to: CGPoint(x: 0, y: size.height))
+        path.addLine(to: CGPoint(x: firstX, y: size.height))
         path.closeSubpath()
 
         return path
@@ -141,7 +145,8 @@ struct MomentumLineGraph: View {
             normalizedValue = 0.0
         }
 
-        let xPosition = size.width * CGFloat(index) / CGFloat(max(dataPoints.count - 1, 1))
+        // Align x-position with centered labels (each label is centered in equal-width sections)
+        let xPosition = size.width * (CGFloat(index) + 0.5) / CGFloat(dataPoints.count)
         let yPosition = size.height * (1 - normalizedValue) // Invert Y (0 at top, height at bottom)
 
         return CGPoint(x: xPosition, y: yPosition)

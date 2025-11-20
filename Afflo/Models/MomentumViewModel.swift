@@ -23,17 +23,20 @@ class MomentumViewModel: ObservableObject {
         let calendar = Calendar.current
         let today = Date()
 
-        // Generate 7 days of mock data (Mon-Sun)
+        // Generate 7 days of mock data
         var weeklyPoints: [MomentumDataPoint] = []
-        let daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
         // Realistic momentum curve values
         let values: [Double] = [75, 68, 72, 85, 88, 92, 95]
 
-        for (index, day) in daysOfWeek.enumerated() {
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "EEE"
+
+        for index in 0..<7 {
             let date = calendar.date(byAdding: .day, value: index - 6, to: today) ?? today
+            let dayAbbreviation = dayFormatter.string(from: date)
             let point = MomentumDataPoint(
-                day: day,
+                day: dayAbbreviation,
                 value: values[index],
                 date: date
             )
@@ -126,7 +129,6 @@ class MomentumViewModel: ObservableObject {
     private func calculateWeeklyData(from tasks: [TaskModel]) -> [WeeklyDataPoint] {
         let calendar = Calendar.current
         let today = Date()
-        let daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         var weeklyData: [WeeklyDataPoint] = []
 
         for dayIndex in 0..<7 {
@@ -143,8 +145,13 @@ class MomentumViewModel: ObservableObject {
             let completionRate = totalCount > 0 ? Double(completedCount) / Double(totalCount) : 0.0
             let score = completionRate * 100
 
+            // Get actual day abbreviation from the date
+            let dayFormatter = DateFormatter()
+            dayFormatter.dateFormat = "EEE"
+            let dayAbbreviation = dayFormatter.string(from: date)
+
             weeklyData.append(WeeklyDataPoint(
-                day: daysOfWeek[dayIndex],
+                day: dayAbbreviation,
                 value: score,
                 timestamp: date
             ))
