@@ -3,10 +3,20 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var authViewModel = AuthViewModel()
     @State private var hasCompletedOnboarding = UserDefaultsManager.shared.hasCompletedOnboarding
+    @State private var showSplash = true
 
     var body: some View {
         Group {
-            if authViewModel.session == nil {
+            if showSplash {
+                SplashView()
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                            withAnimation(.easeOut(duration: 0.3)) {
+                                showSplash = false
+                            }
+                        }
+                    }
+            } else if authViewModel.session == nil {
                 // No session -> show auth
                 AuthView()
             } else if !hasCompletedOnboarding {
