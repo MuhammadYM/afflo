@@ -4,34 +4,28 @@ struct MainTabView: View {
     @State private var selectedTab = 0
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            HomeView()
-                .tabItem {
-                    Label("Home", systemImage: "house")
+        ZStack {
+            // Content views
+            Group {
+                switch selectedTab {
+                case 0:
+                    HomeView()
+                case 1:
+                    GoalsView()
+                case 2:
+                    ProfileView()
+                default:
+                    HomeView()
                 }
-                .tag(0)
+            }
+            .ignoresSafeArea(.all, edges: .bottom)
 
-            ExploreView()
-                .tabItem {
-                    Label("Explore", systemImage: "magnifyingglass")
-                }
-                .tag(1)
-        }
-        .onChange(of: selectedTab) { _, _ in
-            // Haptic feedback on tab change
-            let impact = UIImpactFeedbackGenerator(style: .light)
-            impact.impactOccurred()
-        }
-        .onAppear {
-            // Configure tab bar appearance with blur effect
-            let appearance = UITabBarAppearance()
-            appearance.configureWithDefaultBackground()
-
-            // Add blur effect
-            appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
-
-            UITabBar.appearance().standardAppearance = appearance
-            UITabBar.appearance().scrollEdgeAppearance = appearance
+            // Custom nav bar at bottom
+            VStack {
+                Spacer()
+                CustomNavBar(selectedTab: $selectedTab)
+            }
+            .ignoresSafeArea(.all, edges: .bottom)
         }
     }
 }
