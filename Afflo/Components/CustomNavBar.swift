@@ -51,20 +51,23 @@ struct NavBarButton: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        Button(action: {
-            action()
-            let impact = UIImpactFeedbackGenerator(style: .light)
-            impact.impactOccurred()
-        }) {
-            Image(image)
-                .resizable()
-                .renderingMode(.template)
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 24, height: 24)
-                .foregroundColor(isSelected ? Color.tint(for: colorScheme) : Color.icon(for: colorScheme))
-                .scaleEffect(isSelected ? 1.1 : 1.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
-        }
+        Button(
+            action: {
+                action()
+                let impact = UIImpactFeedbackGenerator(style: .light)
+                impact.impactOccurred()
+            },
+            label: {
+                Image(image)
+                    .resizable()
+                    .renderingMode(.template)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(isSelected ? Color.tint(for: colorScheme) : Color.icon(for: colorScheme))
+                    .scaleEffect(isSelected ? 1.1 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
+            }
+        )
     }
 }
 
