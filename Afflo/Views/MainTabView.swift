@@ -7,15 +7,21 @@ struct MainTabView: View {
         TabView(selection: $selectedTab) {
             HomeView()
                 .tabItem {
-                    Label("Home", systemImage: "house")
+                    Label("Home", image: "home-icon")
                 }
                 .tag(0)
 
-            ExploreView()
+            GoalsView()
                 .tabItem {
-                    Label("Explore", systemImage: "magnifyingglass")
+                    Label("Goals", image: "ai-icon")
                 }
                 .tag(1)
+
+            ProfileView()
+                .tabItem {
+                    Label("Profile", image: "profile-icon")
+                }
+                .tag(2)
         }
         .onChange(of: selectedTab) { _, _ in
             // Haptic feedback on tab change
