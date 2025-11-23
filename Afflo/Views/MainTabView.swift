@@ -13,6 +13,8 @@ struct MainTabView: View {
                 case 1:
                     GoalsView()
                 case 2:
+                    JournalView()
+                case 3:
                     ProfileView()
                 default:
                     HomeView()

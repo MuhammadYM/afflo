@@ -23,9 +23,17 @@ struct CustomNavBar: View {
             Spacer()
 
             NavBarButton(
-                image: "profile-icon",
+                image: "journal-icon",
                 isSelected: selectedTab == 2,
                 action: { selectedTab = 2 }
+            )
+
+            Spacer()
+
+            NavBarButton(
+                image: "profile-icon",
+                isSelected: selectedTab == 3,
+                action: { selectedTab = 3 }
             )
         }
         .padding(.horizontal, 60)
