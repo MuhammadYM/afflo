@@ -26,7 +26,7 @@ struct VoiceJournalComponent: View {
                 .background(Color.background(for: colorScheme))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.tint(for: colorScheme), lineWidth: 2)
+                        .stroke(Color.tint(for: colorScheme), lineWidth: 1)
                 )
                 .cornerRadius(12)
                 .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
