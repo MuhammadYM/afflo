@@ -77,6 +77,25 @@ struct ProfileView: View {
                                     .cornerRadius(12)
                                 }
                             )
+
+                            #if DEBUG
+                            Button(
+                                action: {
+                                    Task {
+                                        await authViewModel.signOut()
+                                    }
+                                },
+                                label: {
+                                    Text("Reset App (Debug Only)")
+                                        .font(.anonymousPro(size: 14))
+                                        .foregroundColor(.red)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color.red.opacity(0.1))
+                                        .cornerRadius(8)
+                                }
+                            )
+                            #endif
                         }
                     } else if let error = profileViewModel.errorMessage {
                         Text(error)
