@@ -45,13 +45,40 @@ struct FloatingNavBar: View {
         .background(
             RoundedRectangle(cornerRadius: 34)
                 .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(colorScheme == .dark ? 0.3 : 0.1), radius: 20, x: 0, y: 10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 34)
-                        .stroke(Color.white.opacity(colorScheme == .dark ? 0.1 : 0.2), lineWidth: 1)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(colorScheme == .dark ? 0.2 : 0.3),
+                                    Color.white.opacity(colorScheme == .dark ? 0.05 : 0.1)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+                .overlay(
+                    // Inner highlight for more depth
+                    RoundedRectangle(cornerRadius: 34)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(colorScheme == .dark ? 0.1 : 0.15),
+                                    Color.clear
+                                ],
+                                startPoint: .top,
+                                endPoint: .center
+                            ),
+                            lineWidth: 0.5
+                        )
+                        .padding(1)
                 )
         )
         .padding(.horizontal, 24)
-        .padding(.bottom, 1)
+        .padding(.bottom, 8)
     }
 }
 

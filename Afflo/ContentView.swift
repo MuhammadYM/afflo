@@ -29,6 +29,7 @@ struct ContentView: View {
                 MainTabView()
             }
         }
+        .persistentSystemOverlays(.hidden)
         .onAppear {
             // Refresh onboarding status on appear
             hasCompletedOnboarding = UserDefaultsManager.shared.hasCompletedOnboarding

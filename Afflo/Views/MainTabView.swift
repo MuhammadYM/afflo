@@ -25,7 +25,17 @@ struct MainTabView: View {
             // Floating nav bar at bottom
             VStack {
                 Spacer()
-                FloatingNavBar(selectedTab: $selectedTab)
+                CustomNavBar(selectedTab: $selectedTab)
+            }
+            .ignoresSafeArea(.all, edges: .bottom)
+        }
+        .persistentSystemOverlays(.hidden)
+        .onAppear {
+            // Additional method to hide home indicator
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootViewController = window.rootViewController {
+                rootViewController.setNeedsUpdateOfHomeIndicatorAutoHidden()
             }
         }
     }
