@@ -22,12 +22,11 @@ struct MainTabView: View {
             }
             .ignoresSafeArea(.all, edges: .bottom)
 
-            // Custom nav bar at bottom
+            // Floating nav bar at bottom
             VStack {
                 Spacer()
-                CustomNavBar(selectedTab: $selectedTab)
+                FloatingNavBar(selectedTab: $selectedTab)
             }
-            .ignoresSafeArea(.all, edges: .bottom)
         }
     }
 }
