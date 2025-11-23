@@ -40,7 +40,7 @@ struct MomentumLineGraph: View {
                     gradientPath(in: geometry.size)
                         .fill(
                             LinearGradient(
-                                colors: [Color.blob.opacity(0.25), Color.blob.opacity(0.05)],
+                                colors: [Color.blob.opacity(0.15), Color.blob.opacity(0.03)],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
@@ -48,16 +48,7 @@ struct MomentumLineGraph: View {
 
                     // Line path
                     linePath(in: geometry.size)
-                        .stroke(Color.blob, lineWidth: 2.5)
-
-                    // Data point markers
-                    ForEach(Array(dataPoints.enumerated()), id: \.element.id) { index, _ in
-                        let position = pointPosition(for: index, in: geometry.size)
-                        Circle()
-                            .fill(Color.blob)
-                            .frame(width: 6, height: 6)
-                            .position(position)
-                    }
+                        .stroke(Color.blob, lineWidth: 2)
                 }
             }
             .frame(height: graphHeight)
@@ -149,6 +140,7 @@ struct MomentumLineGraph: View {
             .font(.anonymousPro(size: 16))
         MomentumLineGraph(
             dataPoints: [
+                MomentumDataPoint(day: "Sun", value: 70, date: Date()),
                 MomentumDataPoint(day: "Mon", value: 75, date: Date()),
                 MomentumDataPoint(day: "Tue", value: 68, date: Date()),
                 MomentumDataPoint(day: "Wed", value: 72, date: Date()),
@@ -165,6 +157,7 @@ struct MomentumLineGraph: View {
             .font(.anonymousPro(size: 16))
         MomentumLineGraph(
             dataPoints: [
+                MomentumDataPoint(day: "Sun", value: 70, date: Date()),
                 MomentumDataPoint(day: "Mon", value: 75, date: Date()),
                 MomentumDataPoint(day: "Tue", value: 68, date: Date()),
                 MomentumDataPoint(day: "Wed", value: 72, date: Date()),
