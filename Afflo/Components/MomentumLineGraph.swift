@@ -7,7 +7,7 @@ struct MomentumLineGraph: View {
     let isExpanded: Bool
 
     private var graphHeight: CGFloat {
-        120
+        90
     }
 
     private var minValue: Double {
@@ -24,8 +24,8 @@ struct MomentumLineGraph: View {
             GeometryReader { geometry in
                 ZStack {
                     // Horizontal gridlines
-                    ForEach(0..<3, id: \.self) { index in
-                        let yPosition = geometry.size.height * CGFloat(index) / 2
+                    ForEach(0..<4, id: \.self) { index in
+                        let yPosition = geometry.size.height * CGFloat(index) / 3
                         Path { path in
                             path.move(to: CGPoint(x: 0, y: yPosition))
                             path.addLine(to: CGPoint(x: geometry.size.width, y: yPosition))
@@ -36,11 +36,24 @@ struct MomentumLineGraph: View {
                         )
                     }
 
+                    // Vertical gridlines (dotted)
+                    ForEach(dataPoints.indices, id: \.self) { index in
+                        let xPosition = geometry.size.width * (CGFloat(index) + 0.5) / CGFloat(dataPoints.count)
+                        Path { path in
+                            path.move(to: CGPoint(x: xPosition, y: 0))
+                            path.addLine(to: CGPoint(x: xPosition, y: geometry.size.height))
+                        }
+                        .stroke(
+                            colorScheme == .light ? Color.lightGridLine : Color.darkGridLine,
+                            style: StrokeStyle(lineWidth: 1, dash: [2, 3])
+                        )
+                    }
+
                     // Gradient fill under curve
                     gradientPath(in: geometry.size)
                         .fill(
                             LinearGradient(
-                                colors: [Color.blob.opacity(0.25), Color.blob.opacity(0.05)],
+                                colors: [Color.blob.opacity(0.15), Color.blob.opacity(0.03)],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
@@ -48,16 +61,7 @@ struct MomentumLineGraph: View {
 
                     // Line path
                     linePath(in: geometry.size)
-                        .stroke(Color.blob, lineWidth: 2.5)
-
-                    // Data point markers
-                    ForEach(Array(dataPoints.enumerated()), id: \.element.id) { index, _ in
-                        let position = pointPosition(for: index, in: geometry.size)
-                        Circle()
-                            .fill(Color.blob)
-                            .frame(width: 6, height: 6)
-                            .position(position)
-                    }
+                        .stroke(Color.blob, lineWidth: 2)
                 }
             }
             .frame(height: graphHeight)
@@ -149,6 +153,7 @@ struct MomentumLineGraph: View {
             .font(.anonymousPro(size: 16))
         MomentumLineGraph(
             dataPoints: [
+                MomentumDataPoint(day: "Sun", value: 70, date: Date()),
                 MomentumDataPoint(day: "Mon", value: 75, date: Date()),
                 MomentumDataPoint(day: "Tue", value: 68, date: Date()),
                 MomentumDataPoint(day: "Wed", value: 72, date: Date()),
@@ -165,6 +170,7 @@ struct MomentumLineGraph: View {
             .font(.anonymousPro(size: 16))
         MomentumLineGraph(
             dataPoints: [
+                MomentumDataPoint(day: "Sun", value: 70, date: Date()),
                 MomentumDataPoint(day: "Mon", value: 75, date: Date()),
                 MomentumDataPoint(day: "Tue", value: 68, date: Date()),
                 MomentumDataPoint(day: "Wed", value: 72, date: Date()),

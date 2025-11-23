@@ -23,17 +23,17 @@ class MomentumViewModel: ObservableObject {
         let calendar = Calendar.current
         let today = Date()
 
-        // Generate 7 days of mock data
+        // Generate 8 days of mock data
         var weeklyPoints: [MomentumDataPoint] = []
 
         // Realistic momentum curve values
-        let values: [Double] = [75, 68, 72, 85, 88, 92, 95]
+        let values: [Double] = [70, 75, 68, 72, 85, 88, 92, 95]
 
         let dayFormatter = DateFormatter()
         dayFormatter.dateFormat = "EEE"
 
-        for index in 0..<7 {
-            let date = calendar.date(byAdding: .day, value: index - 6, to: today) ?? today
+        for index in 0..<8 {
+            let date = calendar.date(byAdding: .day, value: index - 7, to: today) ?? today
             let dayAbbreviation = dayFormatter.string(from: date)
             let point = MomentumDataPoint(
                 day: dayAbbreviation,
@@ -94,7 +94,7 @@ class MomentumViewModel: ObservableObject {
             let userId = try await getUserId()
             let tasks = try await fetchRecentTasks(userId: userId)
             let weeklyData = calculateWeeklyData(from: tasks)
-            let score = Int(weeklyData.map { $0.value }.reduce(0, +) / 7.0)
+            let score = Int(weeklyData.map { $0.value }.reduce(0, +) / 8.0)
             let breakdown = calculateBreakdown(from: tasks)
             let delta = "+\(String(format: "%.1f", breakdown.tasks * 10))hrs"
 
@@ -115,7 +115,7 @@ class MomentumViewModel: ObservableObject {
     private func fetchRecentTasks(userId: String) async throws -> [TaskModel] {
         let calendar = Calendar.current
         let today = Date()
-        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today) ?? today
+        let sevenDaysAgo = calendar.date(byAdding: .day, value: -8, to: today) ?? today
 
         return try await supabase
             .from("tasks")
@@ -131,8 +131,8 @@ class MomentumViewModel: ObservableObject {
         let today = Date()
         var weeklyData: [WeeklyDataPoint] = []
 
-        for dayIndex in 0..<7 {
-            let date = calendar.date(byAdding: .day, value: dayIndex - 6, to: today) ?? today
+        for dayIndex in 0..<8 {
+            let date = calendar.date(byAdding: .day, value: dayIndex - 7, to: today) ?? today
             let dayStart = calendar.startOfDay(for: date)
             let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? date
 

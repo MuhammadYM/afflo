@@ -54,7 +54,7 @@ struct TaskRowView: View {
                 }
             })
             .focused($isFocused)
-            .font(.anonymousPro(size: 15))
+            .font(.anonymousPro(size: 14))
             .foregroundColor(Color.text(for: colorScheme))
             .strikethrough(task.isCompleted, color: Color.text(for: colorScheme).opacity(0.5))
             .opacity(task.isCompleted ? 0.6 : 1.0)
@@ -66,7 +66,7 @@ struct TaskRowView: View {
                 isFocused = false
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
         .padding(.horizontal, 12)
         .contextMenu {
             Button(role: .destructive, action: onDelete) {
