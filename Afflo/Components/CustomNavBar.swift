@@ -76,8 +76,17 @@ struct NavBarButton: View {
                     .renderingMode(useTemplate ? .template : .original)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 24, height: 24)
-                    .foregroundColor(useTemplate && isSelected ? Color.tint(for: colorScheme) : (useTemplate ? Color.icon(for: colorScheme) : nil))
-                    .shadow(color: isSelected ? Color.tint(for: colorScheme).opacity(0.8) : Color.clear, radius: 12, x: 0, y: 0)
+                    .foregroundColor(
+                        useTemplate && isSelected 
+                        ? Color.tint(for: colorScheme) 
+                        : (useTemplate ? Color.icon(for: colorScheme) : nil)
+                    )
+                    .shadow(
+                        color: isSelected ? Color.tint(for: colorScheme).opacity(0.8) : Color.clear,
+                        radius: 12,
+                        x: 0,
+                        y: 0
+                    )
                     .scaleEffect(isSelected ? 1.1 : 1.0)
                     .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
             }
