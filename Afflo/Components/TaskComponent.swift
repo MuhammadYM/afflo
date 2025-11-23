@@ -20,7 +20,7 @@ struct TaskComponent: View {
         _viewModel = StateObject(wrappedValue: TaskViewModel(viewContext: viewContext))
     }
 
-    private let maxVisibleTasks = 4
+    private let maxVisibleTasks = 3
 
     var visibleTasks: [TaskModel] {
         if isExpanded {
@@ -37,7 +37,7 @@ struct TaskComponent: View {
                 // Header
                 HStack {
                     Text("Tasks")
-                        .font(.anonymousPro(size: 16))
+                        .font(.anonymousPro(size: 14))
                         .foregroundColor(Color.text(for: colorScheme))
 
                     // Show error indicator
@@ -80,10 +80,6 @@ struct TaskComponent: View {
                 .padding(.top, 10)
                 .padding(.bottom, 6)
 
-                Divider()
-                    .background(Color.tint(for: colorScheme).opacity(0.3))
-                    .padding(.horizontal, 16)
-
                 // Task list or empty state
                 if viewModel.tasks.isEmpty && !showAddField {
                     // Empty state - show as task entry format
@@ -96,10 +92,10 @@ struct TaskComponent: View {
                             .frame(width: 12, height: 12)
 
                         Text("Add a task...")
-                            .font(.anonymousPro(size: 15))
+                            .font(.anonymousPro(size: 14))
                             .foregroundColor(Color.icon(for: colorScheme))
                     }
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 6)
                     .padding(.horizontal, 12)
                     .onTapGesture {
                         showAddField = true
@@ -144,14 +140,14 @@ struct TaskComponent: View {
 
                                 TextField("Add a task...", text: $newTaskText)
                                     .focused($isAddFieldFocused)
-                                    .font(.anonymousPro(size: 15))
+                                    .font(.anonymousPro(size: 14))
                                     .foregroundColor(Color.text(for: colorScheme))
                                     .submitLabel(.done)
                                     .onSubmit {
                                         addTask()
                                     }
                             }
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 6)
                             .padding(.horizontal, 12)
                         }
                     }
@@ -166,7 +162,7 @@ struct TaskComponent: View {
                             .foregroundColor(Color.icon(for: colorScheme))
                         Spacer()
                     }
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 4)
                     .onTapGesture {
                         withAnimation {
                             isExpanded.toggle()
@@ -174,7 +170,7 @@ struct TaskComponent: View {
                     }
                 }
             }
-            .padding(.bottom, 10)
+            .padding(.bottom, 8)
             .frame(width: 327, alignment: .leading)
             .background(Color.background(for: colorScheme))
             .overlay(

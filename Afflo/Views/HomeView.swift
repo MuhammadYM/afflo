@@ -60,7 +60,7 @@ struct HomeView: View {
                         .id("momentumCard")
 
                         Spacer()
-                            .frame(height: 40)
+                            .frame(height: 120)
                         }
                     }
                 }

@@ -7,7 +7,7 @@ struct MomentumLineGraph: View {
     let isExpanded: Bool
 
     private var graphHeight: CGFloat {
-        120
+        90
     }
 
     private var minValue: Double {
@@ -24,8 +24,8 @@ struct MomentumLineGraph: View {
             GeometryReader { geometry in
                 ZStack {
                     // Horizontal gridlines
-                    ForEach(0..<3, id: \.self) { index in
-                        let yPosition = geometry.size.height * CGFloat(index) / 2
+                    ForEach(0..<4, id: \.self) { index in
+                        let yPosition = geometry.size.height * CGFloat(index) / 3
                         Path { path in
                             path.move(to: CGPoint(x: 0, y: yPosition))
                             path.addLine(to: CGPoint(x: geometry.size.width, y: yPosition))
@@ -33,6 +33,19 @@ struct MomentumLineGraph: View {
                         .stroke(
                             colorScheme == .light ? Color.lightGridLine : Color.darkGridLine,
                             lineWidth: 1
+                        )
+                    }
+
+                    // Vertical gridlines (dotted)
+                    ForEach(dataPoints.indices, id: \.self) { index in
+                        let xPosition = geometry.size.width * (CGFloat(index) + 0.5) / CGFloat(dataPoints.count)
+                        Path { path in
+                            path.move(to: CGPoint(x: xPosition, y: 0))
+                            path.addLine(to: CGPoint(x: xPosition, y: geometry.size.height))
+                        }
+                        .stroke(
+                            colorScheme == .light ? Color.lightGridLine : Color.darkGridLine,
+                            style: StrokeStyle(lineWidth: 1, dash: [2, 3])
                         )
                     }
 
