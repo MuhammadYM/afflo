@@ -31,6 +31,10 @@ struct TaskComponent: View {
                         .foregroundColor(Color.text(for: colorScheme))
                         .padding(.leading, 2)
 
+                    Text("(\(viewModel.tasks.filter { $0.isCompleted }.count)/\(viewModel.tasks.count))")
+                        .font(.anonymousPro(size: 14))
+                        .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
+
                     // Show error indicator
                     if let error = viewModel.errorMessage {
                         Text("⚠️")
@@ -207,7 +211,7 @@ struct TaskComponent: View {
                                 }
                             }
                         }
-                        .frame(height: 82)
+                        .frame(maxHeight: 100)
                     }
                 }
             }
