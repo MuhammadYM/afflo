@@ -20,7 +20,7 @@ struct GoalsView: View {
                     // Milestones Section
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Milestones")
-                            .font(.anonymousPro(size: 20, weight: .bold))
+                            .font(.montserrat(size: 20))
                             .foregroundColor(Color.text(for: colorScheme))
 
                         PlaceholderCard(text: "Your milestones will appear here")
@@ -29,7 +29,7 @@ struct GoalsView: View {
                     // Goals Section
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Active Goals")
-                            .font(.anonymousPro(size: 20, weight: .bold))
+                            .font(.montserrat(size: 20))
                             .foregroundColor(Color.text(for: colorScheme))
 
                         PlaceholderCard(text: "Your active goals will appear here")
@@ -38,7 +38,7 @@ struct GoalsView: View {
                     // AI Insights Section
                     VStack(alignment: .leading, spacing: 16) {
                         Text("AI Insights")
-                            .font(.anonymousPro(size: 20, weight: .bold))
+                            .font(.montserrat(size: 20))
                             .foregroundColor(Color.text(for: colorScheme))
 
                         PlaceholderCard(text: "Personalized insights coming soon")

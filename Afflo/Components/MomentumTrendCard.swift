@@ -17,14 +17,8 @@ struct MomentumTrendCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if let data = viewModel.momentumData {
-                // Header
+                // Score display
                 HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Momentum trend")
-                            .font(.anonymousPro(size: 16))
-                            .foregroundColor(Color.text(for: colorScheme))
-                    }
-
                     Spacer()
 
                     VStack(alignment: .trailing, spacing: 2) {

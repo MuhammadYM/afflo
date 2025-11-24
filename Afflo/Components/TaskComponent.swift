@@ -20,16 +20,6 @@ struct TaskComponent: View {
         _viewModel = StateObject(wrappedValue: TaskViewModel(viewContext: viewContext))
     }
 
-    private let maxVisibleTasks = 3
-
-    var visibleTasks: [TaskModel] {
-        if isExpanded {
-            return viewModel.tasks
-        } else {
-            return Array(viewModel.tasks.prefix(maxVisibleTasks))
-        }
-    }
-
     var body: some View {
         // The actual task component
         ZStack(alignment: .topLeading) {
@@ -39,6 +29,7 @@ struct TaskComponent: View {
                     Text("Tasks")
                         .font(.anonymousPro(size: 14))
                         .foregroundColor(Color.text(for: colorScheme))
+                        .padding(.leading, 2)
 
                     // Show error indicator
                     if let error = viewModel.errorMessage {
@@ -52,29 +43,41 @@ struct TaskComponent: View {
 
                     Spacer()
 
-                    Button(
-                        action: {
-                            // If we have more than maxVisibleTasks, expand first
-                            if viewModel.tasks.count >= maxVisibleTasks {
+                    HStack(spacing: 8) {
+                        Button(
+                            action: {
                                 withAnimation {
-                                    isExpanded = true
+                                    isExpanded.toggle()
                                 }
+                            },
+                            label: {
+                                Image("resize-icon")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 9, height: 9)
+                                    .foregroundColor(Color.text(for: colorScheme))
                             }
-                            showAddField = true
-                            // Delay focus to allow the text field to fully initialize
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                isAddFieldFocused = true
+                        )
+                        .buttonStyle(PlainButtonStyle())
+
+                        Button(
+                            action: {
+                                showAddField = true
+                                // Delay focus to allow the text field to fully initialize
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    isAddFieldFocused = true
+                                }
+                            },
+                            label: {
+                                Image("documents-add-icon")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 12, height: 12)
+                                    .foregroundColor(Color.text(for: colorScheme))
                             }
-                        },
-                        label: {
-                            Image("documents-add-icon")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 15, height: 15)
-                                .foregroundColor(Color.text(for: colorScheme))
-                        }
-                    )
-                    .buttonStyle(PlainButtonStyle())
+                        )
+                        .buttonStyle(PlainButtonStyle())
+                    }
                 }
                 .padding(.horizontal, 10)
                 .padding(.top, 10)
@@ -105,68 +108,106 @@ struct TaskComponent: View {
                         }
                     }
                 } else {
-                    VStack(spacing: 0) {
-                        ForEach(visibleTasks) { task in
-                            TaskRowView(
-                                task: task,
-                                onToggle: {
-                                    Task {
-                                        await viewModel.toggleComplete(id: task.id)
-                                    }
-                                },
-                                onUpdate: { newText in
-                                    Task {
-                                        await viewModel.updateTask(id: task.id, text: newText)
-                                    }
-                                },
-                                onDelete: {
-                                    Task {
-                                        await viewModel.deleteTask(id: task.id)
-                                        showToast(message: "Task deleted")
-                                    }
-                                }
-                            )
-                        }
-
-                        // Add task field at bottom
-                        if showAddField {
-                            HStack(spacing: 12) {
-                                Circle()
-                                    .strokeBorder(
-                                        style: StrokeStyle(lineWidth: 1, dash: [2, 2.14])
+                    if isExpanded {
+                        ScrollView {
+                            VStack(spacing: 0) {
+                                ForEach(viewModel.tasks) { task in
+                                    TaskRowView(
+                                        task: task,
+                                        onToggle: {
+                                            Task {
+                                                await viewModel.toggleComplete(id: task.id)
+                                            }
+                                        },
+                                        onUpdate: { newText in
+                                            Task {
+                                                await viewModel.updateTask(id: task.id, text: newText)
+                                            }
+                                        },
+                                        onDelete: {
+                                            Task {
+                                                await viewModel.deleteTask(id: task.id)
+                                                showToast(message: "Task deleted")
+                                            }
+                                        }
                                     )
-                                    .foregroundColor(Color.text(for: colorScheme))
-                                    .frame(width: 12, height: 12)
+                                }
 
-                                TextField("Add a task...", text: $newTaskText)
-                                    .focused($isAddFieldFocused)
-                                    .font(.anonymousPro(size: 14))
-                                    .foregroundColor(Color.text(for: colorScheme))
-                                    .submitLabel(.done)
-                                    .onSubmit {
-                                        addTask()
+                                // Add task field at bottom
+                                if showAddField {
+                                    HStack(spacing: 12) {
+                                        Circle()
+                                            .strokeBorder(
+                                                style: StrokeStyle(lineWidth: 1, dash: [2, 2.14])
+                                            )
+                                            .foregroundColor(Color.text(for: colorScheme))
+                                            .frame(width: 12, height: 12)
+
+                                        TextField("Add a task...", text: $newTaskText)
+                                            .focused($isAddFieldFocused)
+                                            .font(.anonymousPro(size: 14))
+                                            .foregroundColor(Color.text(for: colorScheme))
+                                            .submitLabel(.done)
+                                            .onSubmit {
+                                                addTask()
+                                            }
                                     }
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 12)
+                                }
                             }
-                            .padding(.vertical, 6)
-                            .padding(.horizontal, 12)
                         }
-                    }
-                }
+                        .frame(height: 400)
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 0) {
+                                ForEach(viewModel.tasks) { task in
+                                    TaskRowView(
+                                        task: task,
+                                        onToggle: {
+                                            Task {
+                                                await viewModel.toggleComplete(id: task.id)
+                                            }
+                                        },
+                                        onUpdate: { newText in
+                                            Task {
+                                                await viewModel.updateTask(id: task.id, text: newText)
+                                            }
+                                        },
+                                        onDelete: {
+                                            Task {
+                                                await viewModel.deleteTask(id: task.id)
+                                                showToast(message: "Task deleted")
+                                            }
+                                        }
+                                    )
+                                }
 
-                // Expand/collapse indicator
-                if viewModel.tasks.count > maxVisibleTasks {
-                    HStack {
-                        Spacer()
-                        Text(isExpanded ? "Show less" : "Show more (\(viewModel.tasks.count - maxVisibleTasks))")
-                            .font(.anonymousPro(size: 12))
-                            .foregroundColor(Color.icon(for: colorScheme))
-                        Spacer()
-                    }
-                    .padding(.vertical, 4)
-                    .onTapGesture {
-                        withAnimation {
-                            isExpanded.toggle()
+                                // Add task field at bottom
+                                if showAddField {
+                                    HStack(spacing: 12) {
+                                        Circle()
+                                            .strokeBorder(
+                                                style: StrokeStyle(lineWidth: 1, dash: [2, 2.14])
+                                            )
+                                            .foregroundColor(Color.text(for: colorScheme))
+                                            .frame(width: 12, height: 12)
+
+                                        TextField("Add a task...", text: $newTaskText)
+                                            .focused($isAddFieldFocused)
+                                            .font(.anonymousPro(size: 14))
+                                            .foregroundColor(Color.text(for: colorScheme))
+                                            .submitLabel(.done)
+                                            .onSubmit {
+                                                addTask()
+                                            }
+                                    }
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 12)
+                                }
+                            }
                         }
+                        .frame(height: 82)
                     }
                 }
             }
