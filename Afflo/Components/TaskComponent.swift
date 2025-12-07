@@ -161,7 +161,7 @@ struct TaskComponent: View {
                                 }
                             }
                         }
-                        .frame(height: 400)
+                        .frame(minHeight: 200, maxHeight: 400)
                     } else {
                         ScrollView {
                             VStack(spacing: 0) {
@@ -216,7 +216,6 @@ struct TaskComponent: View {
                 }
             }
             .padding(.bottom, 8)
-            .frame(width: 327, alignment: .leading)
             .background(Color.background(for: colorScheme))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
@@ -233,6 +232,7 @@ struct TaskComponent: View {
             }
         }
         .frame(width: 327, alignment: .topLeading)
+        .frame(minHeight: isExpanded ? 300 : nil)
         .task {
             await viewModel.loadTasks()
         }
