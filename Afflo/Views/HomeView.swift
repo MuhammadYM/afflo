@@ -42,14 +42,22 @@ struct HomeView: View {
                         .padding(.leading, 28)
                         .padding(.trailing, 28)
 
-                        TaskComponent(isExpanded: $isTaskComponentExpanded)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top, 20)
-                            .padding(.leading, 28)
-                            .padding(.trailing, 28)
-                            .zIndex(2) // Ensure TaskComponent is above the overlay
+                        if !isTaskComponentExpanded {
+                            TaskComponent(isExpanded: $isTaskComponentExpanded)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 20)
+                                .padding(.leading, 28)
+                                .padding(.trailing, 28)
+                        } else {
+                            Spacer()
+                                .frame(height: 127)
+                        }
 
-                        VStack(spacing: 0) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Momentum trend")
+                                .font(.montserrat(size: 14))
+                                .foregroundColor(Color.text(for: colorScheme))
+
                             MomentumTrendCard(isExpanded: $isMomentumExpanded)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .zIndex(1) // Below TaskComponent but above overlay
@@ -74,11 +82,11 @@ struct HomeView: View {
                     }
                 }
             }
-            .zIndex(isTaskComponentExpanded || isMomentumExpanded ? 2 : 0)
+            .zIndex(isMomentumExpanded ? 2 : 0)
 
             // Full screen tap-to-collapse overlay
             if isMomentumExpanded || isTaskComponentExpanded {
-                Color.black.opacity(0.001)
+                Color.black.opacity(isTaskComponentExpanded ? 0.3 : 0.001)
                     .ignoresSafeArea()
                     .onTapGesture {
                         withAnimation {
@@ -87,6 +95,22 @@ struct HomeView: View {
                         }
                     }
                     .zIndex(1) // Overlay above background but below ScrollView when expanded
+            }
+
+            // Expanded TaskComponent as overlay
+            if isTaskComponentExpanded {
+                HStack {
+                    Spacer()
+                    VStack {
+                        Spacer()
+                        TaskComponent(isExpanded: $isTaskComponentExpanded)
+                        Spacer()
+                    }
+                    Spacer()
+                }
+                .padding(.leading, 10)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .zIndex(999)
             }
         }
     }
