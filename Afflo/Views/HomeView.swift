@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
     @StateObject private var authViewModel = AuthViewModel()
+    @StateObject private var taskViewModel = TaskViewModel()
     @State private var isTaskComponentExpanded = false
     @State private var isMomentumExpanded = false
 
@@ -32,13 +33,21 @@ struct HomeView: View {
                         DateScrollView()
                             .padding(.top, 60)
 
+                        QuickStatsBar(
+                            streak: taskViewModel.currentStreak,
+                            completedTasks: taskViewModel.tasks.filter { $0.isCompleted }.count,
+                            totalTasks: taskViewModel.tasks.count,
+                            focusHours: 0
+                        )
+                        .padding(.top, 20)
+
                         HStack(spacing: 20) {
                             VoiceJournalComponent()
 
                             FocusMetric()
                         }
                         .frame(height: 100)
-                        .padding(.top, 36)
+                        .padding(.top, 16)
                         .padding(.leading, 28)
                         .padding(.trailing, 28)
 
@@ -54,11 +63,11 @@ struct HomeView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Momentum trend")
+                            Text("Productivity trend")
                                 .font(.montserrat(size: 14))
                                 .foregroundColor(Color.text(for: colorScheme))
 
-                            MomentumTrendCard(isExpanded: $isMomentumExpanded)
+                            ProductivityTrendCard(isExpanded: $isMomentumExpanded)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .zIndex(1) // Below TaskComponent but above overlay
                         }
@@ -112,6 +121,9 @@ struct HomeView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .zIndex(999)
             }
+        }
+        .task {
+            await taskViewModel.loadTasks()
         }
     }
 }

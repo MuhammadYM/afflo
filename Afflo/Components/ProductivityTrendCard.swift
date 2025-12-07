@@ -1,9 +1,9 @@
 import CoreData
 import SwiftUI
 
-struct MomentumTrendCard: View {
+struct ProductivityTrendCard: View {
     @Environment(\.colorScheme) var colorScheme
-    @StateObject private var viewModel: MomentumViewModel
+    @StateObject private var viewModel: ProductivityViewModel
     @Binding var isExpanded: Bool
 
     init(
@@ -11,12 +11,12 @@ struct MomentumTrendCard: View {
         viewContext: NSManagedObjectContext? = nil
     ) {
         self._isExpanded = isExpanded
-        _viewModel = StateObject(wrappedValue: MomentumViewModel(viewContext: viewContext))
+        _viewModel = StateObject(wrappedValue: ProductivityViewModel(viewContext: viewContext))
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if let data = viewModel.momentumData {
+            if let data = viewModel.productivityData {
                 // Score display
                 HStack(alignment: .top) {
                     Spacer()
@@ -36,13 +36,13 @@ struct MomentumTrendCard: View {
                 .padding(.bottom, 8)
 
                 // Graph
-                MomentumLineGraph(dataPoints: data.weeklyPoints, isExpanded: isExpanded)
+                ProductivityLineGraph(dataPoints: data.weeklyPoints, isExpanded: isExpanded)
                     .padding(.horizontal, 12)
                     .padding(.bottom, 12)
 
                 // Breakdown (only when expanded)
                 if isExpanded {
-                    MomentumBreakdownView(breakdown: data.breakdown)
+                    ProductivityBreakdownView(breakdown: data.breakdown)
                         .padding(.horizontal, 12)
                         .padding(.bottom, 12)
                         .transition(.opacity.combined(with: .move(edge: .top)))
@@ -71,7 +71,7 @@ struct MomentumTrendCard: View {
             }
         }
         .task {
-            await viewModel.loadMomentumData()
+            await viewModel.loadProductivityData()
         }
     }
 }
@@ -89,7 +89,7 @@ struct MomentumTrendCard: View {
                     Text("Tap card to expand")
                         .font(.anonymousPro(size: 14))
 
-                    MomentumTrendCard(isExpanded: $isExpanded)
+                    ProductivityTrendCard(isExpanded: $isExpanded)
                 }
             }
         }

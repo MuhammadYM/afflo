@@ -1,7 +1,7 @@
 import Foundation
 
 // MARK: - Data Point for Graph
-struct MomentumDataPoint: Identifiable {
+struct ProductivityDataPoint: Identifiable {
     let id = UUID()
     let day: String
     let value: Double
@@ -9,7 +9,7 @@ struct MomentumDataPoint: Identifiable {
 }
 
 // MARK: - Breakdown for Weekly Activities
-struct MomentumBreakdown {
+struct ProductivityBreakdown {
     let sessions: Double
     let focus: Double
     let journal: Double
@@ -23,16 +23,16 @@ struct MomentumBreakdown {
     }
 }
 
-// MARK: - Momentum Data for UI
-struct MomentumData {
+// MARK: - Productivity Data for UI
+struct ProductivityData {
     let score: Int
     let deltaText: String
-    let weeklyPoints: [MomentumDataPoint]
-    let breakdown: MomentumBreakdown
+    let weeklyPoints: [ProductivityDataPoint]
+    let breakdown: ProductivityBreakdown
 }
 
 // MARK: - Supabase Model
-struct MomentumModel: Identifiable, Codable {
+struct ProductivityModel: Identifiable, Codable {
     let id: UUID
     let userId: String
     let score: Int
@@ -69,7 +69,7 @@ struct BreakdownData: Codable {
 }
 
 // MARK: - Upsert Model for Supabase
-struct MomentumModelUpsert: Codable {
+struct ProductivityModelUpsert: Codable {
     let userId: String
     let score: Int
     let delta: String

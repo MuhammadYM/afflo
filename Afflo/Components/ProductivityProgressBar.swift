@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct MomentumProgressBar: View {
+struct ProductivityProgressBar: View {
     @Environment(\.colorScheme) var colorScheme
 
     let label: String
@@ -51,10 +51,10 @@ struct MomentumProgressBar: View {
 
 #Preview {
     VStack(spacing: 16) {
-        MomentumProgressBar(label: "Sessions", value: 0.7)
-        MomentumProgressBar(label: "Focus", value: 0.4)
-        MomentumProgressBar(label: "Journal", value: 0.2)
-        MomentumProgressBar(label: "Tasks", value: 0.9)
+        ProductivityProgressBar(label: "Sessions", value: 0.7)
+        ProductivityProgressBar(label: "Focus", value: 0.4)
+        ProductivityProgressBar(label: "Journal", value: 0.2)
+        ProductivityProgressBar(label: "Tasks", value: 0.9)
     }
     .padding()
     .background(Color.lightBackground)

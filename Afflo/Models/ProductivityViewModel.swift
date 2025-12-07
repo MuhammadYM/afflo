@@ -4,8 +4,8 @@ import Foundation
 import Supabase
 
 @MainActor
-class MomentumViewModel: ObservableObject {
-    @Published var momentumData: MomentumData?
+class ProductivityViewModel: ObservableObject {
+    @Published var productivityData: ProductivityData?
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -19,14 +19,14 @@ class MomentumViewModel: ObservableObject {
     }
 
     // MARK: - Mock Data Generator
-    func generateMockData() -> MomentumData {
+    func generateMockData() -> ProductivityData {
         let calendar = Calendar.current
         let today = Date()
 
         // Generate 8 days of mock data
-        var weeklyPoints: [MomentumDataPoint] = []
+        var weeklyPoints: [ProductivityDataPoint] = []
 
-        // Realistic momentum curve values
+        // Realistic productivity curve values
         let values: [Double] = [70, 75, 68, 72, 85, 88, 92, 95]
 
         let dayFormatter = DateFormatter()
@@ -35,7 +35,7 @@ class MomentumViewModel: ObservableObject {
         for index in 0..<8 {
             let date = calendar.date(byAdding: .day, value: index - 7, to: today) ?? today
             let dayAbbreviation = dayFormatter.string(from: date)
-            let point = MomentumDataPoint(
+            let point = ProductivityDataPoint(
                 day: dayAbbreviation,
                 value: values[index],
                 date: date
@@ -44,14 +44,14 @@ class MomentumViewModel: ObservableObject {
         }
 
         // Mock breakdown data
-        let breakdown = MomentumBreakdown(
+        let breakdown = ProductivityBreakdown(
             sessions: 0.7,
             focus: 0.4,
             journal: 0.2,
             tasks: 0.9
         )
 
-        return MomentumData(
+        return ProductivityData(
             score: 95,
             deltaText: "+2.5hrs",
             weeklyPoints: weeklyPoints,
@@ -59,37 +59,37 @@ class MomentumViewModel: ObservableObject {
         )
     }
 
-    // MARK: - Load Momentum Data
-    func loadMomentumData() async {
+    // MARK: - Load Productivity Data
+    func loadProductivityData() async {
         isLoading = true
         errorMessage = nil
 
         do {
             if networkMonitor.isConnected {
                 // Try to calculate and fetch from Supabase
-                await calculateAndStoreMomentum()
+                await calculateAndStoreProductivity()
                 if let data = try await fetchFromSupabase() {
-                    self.momentumData = convertToMomentumData(data)
+                    self.productivityData = convertToProductivityData(data)
                 } else {
                     // No data yet, use mock data
-                    self.momentumData = generateMockData()
+                    self.productivityData = generateMockData()
                 }
             } else {
                 // Offline - use mock data for now
                 // TODO: Load from Core Data cache
-                self.momentumData = generateMockData()
+                self.productivityData = generateMockData()
             }
             self.isLoading = false
         } catch {
             self.errorMessage = error.localizedDescription
             self.isLoading = false
             // Fallback to mock data on error
-            self.momentumData = generateMockData()
+            self.productivityData = generateMockData()
         }
     }
 
-    // MARK: - Calculate Momentum
-    func calculateAndStoreMomentum() async {
+    // MARK: - Calculate Productivity
+    func calculateAndStoreProductivity() async {
         do {
             let userId = try await getUserId()
             let tasks = try await fetchRecentTasks(userId: userId)
@@ -98,7 +98,7 @@ class MomentumViewModel: ObservableObject {
             let breakdown = calculateBreakdown(from: tasks)
             let delta = "+\(String(format: "%.1f", breakdown.tasks * 10))hrs"
 
-            let momentumUpsert = MomentumModelUpsert(
+            let productivityUpsert = ProductivityModelUpsert(
                 userId: userId,
                 score: score,
                 delta: delta,
@@ -106,9 +106,9 @@ class MomentumViewModel: ObservableObject {
                 breakdown: breakdown
             )
 
-            try await saveToSupabase(momentumUpsert)
+            try await saveToSupabase(productivityUpsert)
         } catch {
-            print("Error calculating momentum: \(error)")
+            print("Error calculating productivity: \(error)")
         }
     }
 
@@ -174,10 +174,10 @@ class MomentumViewModel: ObservableObject {
     }
 
     // MARK: - Supabase Integration
-    func fetchFromSupabase() async throws -> MomentumModel? {
+    func fetchFromSupabase() async throws -> ProductivityModel? {
         let userId = try await getUserId()
 
-        let response: [MomentumModel] = try await supabase
+        let response: [ProductivityModel] = try await supabase
             .from("momentum_data")
             .select()
             .eq("user_id", value: userId)
@@ -189,7 +189,7 @@ class MomentumViewModel: ObservableObject {
         return response.first
     }
 
-    func saveToSupabase(_ data: MomentumModelUpsert) async throws {
+    func saveToSupabase(_ data: ProductivityModelUpsert) async throws {
         try await supabase
             .from("momentum_data")
             .insert(data)
@@ -197,23 +197,23 @@ class MomentumViewModel: ObservableObject {
     }
 
     // MARK: - Conversion Helper
-    func convertToMomentumData(_ model: MomentumModel) -> MomentumData {
+    func convertToProductivityData(_ model: ProductivityModel) -> ProductivityData {
         let dataPoints = model.weeklyData.map { point in
-            MomentumDataPoint(
+            ProductivityDataPoint(
                 day: point.day,
                 value: point.value,
                 date: point.timestamp
             )
         }
 
-        let breakdown = MomentumBreakdown(
+        let breakdown = ProductivityBreakdown(
             sessions: model.breakdown.sessions,
             focus: model.breakdown.focus,
             journal: model.breakdown.journal,
             tasks: model.breakdown.tasks
         )
 
-        return MomentumData(
+        return ProductivityData(
             score: model.score,
             deltaText: model.delta,
             weeklyPoints: dataPoints,

@@ -8,6 +8,7 @@ class TaskViewModel: ObservableObject {
     @Published var tasks: [TaskModel] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var currentStreak: Int = 0
 
     let supabase = SupabaseService.shared.client
     let viewContext: NSManagedObjectContext
@@ -72,6 +73,7 @@ class TaskViewModel: ObservableObject {
             }
         }
 
+        updateStreak()
         isLoading = false
     }
 
@@ -138,6 +140,7 @@ class TaskViewModel: ObservableObject {
             let updatedTask = tasks.first(where: { $0.id == id })!
             await syncTaskToServer(type: "update", taskId: id, task: updatedTask, successMsg: "Task toggled")
             await saveToCoreData(userId: userId)
+            updateStreak()
         } catch {
             errorMessage = error.localizedDescription
             print("❌ Failed to toggle task: \(error)")
@@ -258,6 +261,37 @@ extension TaskViewModel {
             print("📱 Offline, queueing \(type)")
             await queueOperation(type: type, taskId: taskId, task: task)
         }
+    }
+
+    func calculateStreak() -> Int {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        // Group tasks by day (based on updatedAt for completed tasks)
+        var daysWithCompletedTasks: Set<Date> = []
+
+        for task in tasks where task.isCompleted {
+            let dayStart = calendar.startOfDay(for: task.updatedAt)
+            daysWithCompletedTasks.insert(dayStart)
+        }
+
+        // Calculate streak from today backwards
+        var streak = 0
+        var currentDay = today
+
+        while daysWithCompletedTasks.contains(currentDay) {
+            streak += 1
+            guard let previousDay = calendar.date(byAdding: .day, value: -1, to: currentDay) else {
+                break
+            }
+            currentDay = previousDay
+        }
+
+        return streak
+    }
+
+    func updateStreak() {
+        currentStreak = calculateStreak()
     }
 }
 

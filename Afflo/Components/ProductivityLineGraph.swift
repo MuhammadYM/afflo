@@ -1,9 +1,9 @@
 import SwiftUI
 
-struct MomentumLineGraph: View {
+struct ProductivityLineGraph: View {
     @Environment(\.colorScheme) var colorScheme
 
-    let dataPoints: [MomentumDataPoint]
+    let dataPoints: [ProductivityDataPoint]
     let isExpanded: Bool
 
     private var graphHeight: CGFloat {
@@ -151,16 +151,16 @@ struct MomentumLineGraph: View {
     VStack(spacing: 20) {
         Text("Collapsed")
             .font(.anonymousPro(size: 16))
-        MomentumLineGraph(
+        ProductivityLineGraph(
             dataPoints: [
-                MomentumDataPoint(day: "Sun", value: 70, date: Date()),
-                MomentumDataPoint(day: "Mon", value: 75, date: Date()),
-                MomentumDataPoint(day: "Tue", value: 68, date: Date()),
-                MomentumDataPoint(day: "Wed", value: 72, date: Date()),
-                MomentumDataPoint(day: "Thu", value: 85, date: Date()),
-                MomentumDataPoint(day: "Fri", value: 88, date: Date()),
-                MomentumDataPoint(day: "Sat", value: 92, date: Date()),
-                MomentumDataPoint(day: "Sun", value: 95, date: Date())
+                ProductivityDataPoint(day: "Sun", value: 70, date: Date()),
+                ProductivityDataPoint(day: "Mon", value: 75, date: Date()),
+                ProductivityDataPoint(day: "Tue", value: 68, date: Date()),
+                ProductivityDataPoint(day: "Wed", value: 72, date: Date()),
+                ProductivityDataPoint(day: "Thu", value: 85, date: Date()),
+                ProductivityDataPoint(day: "Fri", value: 88, date: Date()),
+                ProductivityDataPoint(day: "Sat", value: 92, date: Date()),
+                ProductivityDataPoint(day: "Sun", value: 95, date: Date())
             ],
             isExpanded: false
         )
@@ -168,16 +168,16 @@ struct MomentumLineGraph: View {
 
         Text("Expanded")
             .font(.anonymousPro(size: 16))
-        MomentumLineGraph(
+        ProductivityLineGraph(
             dataPoints: [
-                MomentumDataPoint(day: "Sun", value: 70, date: Date()),
-                MomentumDataPoint(day: "Mon", value: 75, date: Date()),
-                MomentumDataPoint(day: "Tue", value: 68, date: Date()),
-                MomentumDataPoint(day: "Wed", value: 72, date: Date()),
-                MomentumDataPoint(day: "Thu", value: 85, date: Date()),
-                MomentumDataPoint(day: "Fri", value: 88, date: Date()),
-                MomentumDataPoint(day: "Sat", value: 92, date: Date()),
-                MomentumDataPoint(day: "Sun", value: 95, date: Date())
+                ProductivityDataPoint(day: "Sun", value: 70, date: Date()),
+                ProductivityDataPoint(day: "Mon", value: 75, date: Date()),
+                ProductivityDataPoint(day: "Tue", value: 68, date: Date()),
+                ProductivityDataPoint(day: "Wed", value: 72, date: Date()),
+                ProductivityDataPoint(day: "Thu", value: 85, date: Date()),
+                ProductivityDataPoint(day: "Fri", value: 88, date: Date()),
+                ProductivityDataPoint(day: "Sat", value: 92, date: Date()),
+                ProductivityDataPoint(day: "Sun", value: 95, date: Date())
             ],
             isExpanded: true
         )

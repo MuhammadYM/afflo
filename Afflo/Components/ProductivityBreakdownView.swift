@@ -1,9 +1,9 @@
 import SwiftUI
 
-struct MomentumBreakdownView: View {
+struct ProductivityBreakdownView: View {
     @Environment(\.colorScheme) var colorScheme
 
-    let breakdown: MomentumBreakdown
+    let breakdown: ProductivityBreakdown
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -19,10 +19,10 @@ struct MomentumBreakdownView: View {
 
             // Progress bars
             VStack(spacing: 10) {
-                MomentumProgressBar(label: "Sessions", value: breakdown.sessions)
-                MomentumProgressBar(label: "Focus", value: breakdown.focus)
-                MomentumProgressBar(label: "Journal", value: breakdown.journal)
-                MomentumProgressBar(label: "Tasks", value: breakdown.tasks)
+                ProductivityProgressBar(label: "Sessions", value: breakdown.sessions)
+                ProductivityProgressBar(label: "Focus", value: breakdown.focus)
+                ProductivityProgressBar(label: "Journal", value: breakdown.journal)
+                ProductivityProgressBar(label: "Tasks", value: breakdown.tasks)
             }
         }
         .padding(.top, 8)
@@ -30,8 +30,8 @@ struct MomentumBreakdownView: View {
 }
 
 #Preview {
-    MomentumBreakdownView(
-        breakdown: MomentumBreakdown(
+    ProductivityBreakdownView(
+        breakdown: ProductivityBreakdown(
             sessions: 0.7,
             focus: 0.4,
             journal: 0.2,
