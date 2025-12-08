@@ -2,6 +2,8 @@ import AVFoundation
 import Combine
 import CoreData
 import Foundation
+import Supabase
+import Auth
 
 @MainActor
 class FocusViewModel: ObservableObject {
@@ -216,8 +218,10 @@ class FocusViewModel: ObservableObject {
         }
     }
 
-    deinit {
-        stopTimer()
-        stopSound()
+    nonisolated deinit {
+        Task { @MainActor in
+            stopTimer()
+            stopSound()
+        }
     }
 }
