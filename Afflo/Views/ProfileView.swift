@@ -4,6 +4,8 @@ struct ProfileView: View {
     @Environment(\.colorScheme) var colorScheme
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var profileViewModel = ProfileViewModel()
+    @EnvironmentObject var achievementViewModel: AchievementViewModel
+    @State private var selectedBadge: AchievementBadge?
 
     var body: some View {
         ZStack {
@@ -44,6 +46,62 @@ struct ProfileView: View {
                                 label: "What's holding you back",
                                 value: profile.obstacle ?? "Not set"
                             )
+                        }
+
+                        // Achievements Section
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack {
+                                Text("Achievements")
+                                    .font(.montserrat(size: 20, weight: .bold))
+                                    .foregroundColor(Color.text(for: colorScheme))
+
+                                Spacer()
+
+                                Text("\(achievementViewModel.unlockedBadges.count)/\(achievementViewModel.badges.count)")
+                                    .font(.montserrat(size: 14, weight: .bold))
+                                    .foregroundColor(Color(hex: "#8E9AAF"))
+                            }
+                            .padding(.top, 8)
+
+                            // Unlocked badges
+                            if !achievementViewModel.unlockedBadges.isEmpty {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("Unlocked")
+                                        .font(.montserrat(size: 14))
+                                        .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
+
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 12) {
+                                            ForEach(achievementViewModel.unlockedBadges) { badge in
+                                                AchievementBadgeCard(badge: badge)
+                                                    .onTapGesture {
+                                                        selectedBadge = badge
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // In progress badges
+                            if !achievementViewModel.lockedBadges.isEmpty {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("In Progress")
+                                        .font(.montserrat(size: 14))
+                                        .foregroundColor(Color.text(for: colorScheme).opacity(0.6))
+
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 12) {
+                                            ForEach(achievementViewModel.lockedBadges.prefix(5)) { badge in
+                                                AchievementBadgeCard(badge: badge)
+                                                    .onTapGesture {
+                                                        selectedBadge = badge
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         // Settings Section
@@ -109,8 +167,12 @@ struct ProfileView: View {
                 .padding(.horizontal, 28)
             }
         }
+        .sheet(item: $selectedBadge) { badge in
+            AchievementBadgeDetailView(badge: badge)
+        }
         .task {
             await profileViewModel.fetchUserProfile()
+            await achievementViewModel.loadAchievements()
         }
     }
 }
@@ -143,4 +205,5 @@ struct ProfileInfoCard: View {
 
 #Preview {
     ProfileView()
+        .environmentObject(AchievementViewModel())
 }

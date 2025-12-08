@@ -4,7 +4,8 @@ struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var taskViewModel = TaskViewModel()
-    @StateObject private var focusViewModel = FocusViewModel()
+    @EnvironmentObject var focusViewModel: FocusViewModel
+    @EnvironmentObject var achievementViewModel: AchievementViewModel
     @State private var isTaskComponentExpanded = false
     @State private var isMomentumExpanded = false
     @State private var showFocusSetup = false
@@ -173,13 +174,27 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $focusViewModel.isSessionActive) {
             FocusTimerView(viewModel: focusViewModel)
         }
+        .achievementUnlockOverlay(achievementViewModel)
         .task {
             await taskViewModel.loadTasks()
             await focusViewModel.loadTodaysFocusHours()
+            await achievementViewModel.loadAchievements()
+        }
+        .onChange(of: taskViewModel.tasks) { _, _ in
+            Task {
+                await achievementViewModel.checkAchievements(
+                    streak: taskViewModel.currentStreak,
+                    totalTasks: taskViewModel.tasks.filter { $0.isCompleted }.count,
+                    focusSessions: 0, // TODO: Track total sessions
+                    focusHours: focusViewModel.totalFocusHoursToday
+                )
+            }
         }
     }
 }
 
 #Preview {
     HomeView()
+        .environmentObject(FocusViewModel())
+        .environmentObject(AchievementViewModel())
 }

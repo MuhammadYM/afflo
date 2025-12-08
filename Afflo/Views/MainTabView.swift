@@ -2,6 +2,8 @@ import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab = 0
+    @StateObject private var focusViewModel = FocusViewModel()
+    @StateObject private var achievementViewModel = AchievementViewModel()
 
     var body: some View {
         ZStack {
@@ -10,14 +12,19 @@ struct MainTabView: View {
                 switch selectedTab {
                 case 0:
                     HomeView()
+                        .environmentObject(focusViewModel)
+                        .environmentObject(achievementViewModel)
                 case 1:
                     GoalsView()
                 case 2:
                     JournalView()
                 case 3:
                     ProfileView()
+                        .environmentObject(achievementViewModel)
                 default:
                     HomeView()
+                        .environmentObject(focusViewModel)
+                        .environmentObject(achievementViewModel)
                 }
             }
             .ignoresSafeArea(.all, edges: .bottom)
