@@ -4,8 +4,10 @@ struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var taskViewModel = TaskViewModel()
+    @StateObject private var focusViewModel = FocusViewModel()
     @State private var isTaskComponentExpanded = false
     @State private var isMomentumExpanded = false
+    @State private var showFocusSetup = false
 
     var body: some View {
         ZStack {
@@ -37,7 +39,7 @@ struct HomeView: View {
                             streak: taskViewModel.currentStreak,
                             completedTasks: taskViewModel.tasks.filter { $0.isCompleted }.count,
                             totalTasks: taskViewModel.tasks.count,
-                            focusHours: 0
+                            focusHours: focusViewModel.totalFocusHoursToday
                         )
                         .padding(.top, 20)
 
@@ -121,9 +123,45 @@ struct HomeView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .zIndex(999)
             }
+
+            // Floating Focus Button
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        if focusViewModel.isSessionActive {
+                            // Show timer view
+                        } else {
+                            showFocusSetup = true
+                        }
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.blob)
+                                .frame(width: 60, height: 60)
+                                .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+
+                            Image(systemName: focusViewModel.isSessionActive ? "pause.fill" : "timer")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .padding(.trailing, 28)
+                    .padding(.bottom, 100) // Above tab bar
+                }
+            }
+            .zIndex(1000)
+        }
+        .sheet(isPresented: $showFocusSetup) {
+            FocusSessionSetupView(viewModel: focusViewModel)
+        }
+        .fullScreenCover(isPresented: $focusViewModel.isSessionActive) {
+            FocusTimerView(viewModel: focusViewModel)
         }
         .task {
             await taskViewModel.loadTasks()
+            await focusViewModel.loadTodaysFocusHours()
         }
     }
 }
