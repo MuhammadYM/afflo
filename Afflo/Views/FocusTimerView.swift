@@ -43,7 +43,7 @@ struct FocusTimerView: View {
                     // Time remaining
                     VStack(spacing: 4) {
                         Text(timeString)
-                            .font(.anonymousPro(size: 48, weight: .bold))
+                            .font(.montserrat(size: 48, weight: .bold))
                             .foregroundColor(Color.text(for: colorScheme))
 
                         if let sound = viewModel.selectedSound {
@@ -60,7 +60,7 @@ struct FocusTimerView: View {
                     showEndConfirmation = true
                 }) {
                     Text("End Session")
-                        .font(.anonymousPro(size: 16))
+                        .font(.montserrat(size: 16))
                         .foregroundColor(.red)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)

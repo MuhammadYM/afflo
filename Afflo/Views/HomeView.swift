@@ -136,16 +136,30 @@ struct HomeView: View {
                             showFocusSetup = true
                         }
                     }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.blob)
-                                .frame(width: 60, height: 60)
-                                .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
-
-                            Image(systemName: focusViewModel.isSessionActive ? "pause.fill" : "timer")
-                                .font(.system(size: 24))
+                        HStack(spacing: 8) {
+                            Image(systemName: focusViewModel.isSessionActive ? "pause.fill" : "brain.head.profile")
+                                .font(.system(size: 20, weight: .semibold))
                                 .foregroundColor(.white)
+
+                            if !focusViewModel.isSessionActive {
+                                Text("Focus")
+                                    .font(.montserrat(size: 14, weight: .bold))
+                                    .foregroundColor(.white)
+                            }
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 30)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color(hex: "#8E9AAF"), Color(hex: "#6B7A8F"), Color(hex: "#4A5568")],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
+                        .shadow(color: Color.black.opacity(0.25), radius: 10, x: 0, y: 5)
                     }
                     .padding(.trailing, 28)
                     .padding(.bottom, 100) // Above tab bar

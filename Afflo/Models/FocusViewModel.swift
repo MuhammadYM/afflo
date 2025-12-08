@@ -104,8 +104,17 @@ class FocusViewModel: ObservableObject {
 
     // MARK: - Audio Playback
     private func playSound(_ sound: FocusSoundType) {
+        // Configure audio session first
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("❌ Failed to configure audio session: \(error)")
+        }
+
         guard let url = Bundle.main.url(forResource: sound.fileName, withExtension: "mp3") else {
             print("⚠️ Sound file not found: \(sound.fileName).mp3")
+            print("⚠️ Please add audio files to Resources folder. See AUDIO_FILES_NEEDED.md")
             return
         }
 
@@ -113,11 +122,14 @@ class FocusViewModel: ObservableObject {
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.numberOfLoops = -1 // Loop indefinitely
             audioPlayer?.volume = 0.5
-            audioPlayer?.play()
+            audioPlayer?.prepareToPlay()
 
-            // Configure audio session for background playback
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-            try AVAudioSession.sharedInstance().setActive(true)
+            let success = audioPlayer?.play() ?? false
+            if success {
+                print("✅ Playing sound: \(sound.fileName).mp3")
+            } else {
+                print("❌ Failed to start playback")
+            }
         } catch {
             print("❌ Failed to play sound: \(error)")
         }
